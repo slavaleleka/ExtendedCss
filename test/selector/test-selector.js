@@ -265,3 +265,18 @@ QUnit.test('Test + and ~ combinators matching', (assert) => {
     assert.equal(1, elements.length);
     assert.ok(selector.matches(elements[0]));
 });
+
+QUnit.test('Test xpath selectors', (assert) => {
+    let elements;
+    let selector;
+
+    selector = ExtendedSelectorFactory.createSelector('//html[1]/body[1]/div[1]');
+    elements = selector.querySelectorAll();
+    assert.equal(1, elements.length);
+    assert.ok(selector.matches(elements[0]));
+
+    selector = ExtendedSelectorFactory.createSelector('//html[1]/body[2]/div[1]');
+    elements = selector.querySelectorAll();
+    assert.equal(1, elements.length);
+    assert.ok(selector.matches(elements[0]));
+});
