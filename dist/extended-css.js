@@ -1,4 +1,4 @@
-/*! extended-css - v1.1.6 - Fri Dec 13 2019
+/*! extended-css - v1.1.6 - Fri Dec 20 2019
 * https://github.com/AdguardTeam/ExtendedCss
 * Copyright (c) 2019 Adguard ; Licensed LGPL-3.0
 */
@@ -3137,7 +3137,10 @@ var ExtendedCss = (function () {
       function ExtendedSelectorParser(selectorText, tokens, debug) {
         initialize();
 
-        if (typeof tokens === 'undefined') {
+        if (selectorText.startsWith('\/\/')) {
+          this.selectorText = selectorText;
+          this.tokens = null;
+        } else if (typeof tokens === 'undefined') {
           this.selectorText = cssUtils.normalize(selectorText); // Passing `returnUnsorted` in order to receive tokens in the order that's valid for the browser
           // In Sizzle internally, the tokens are re-sorted: https://github.com/AdguardTeam/ExtendedCss/issues/55
 
@@ -3169,6 +3172,10 @@ var ExtendedCss = (function () {
           const {
             selectorText
           } = this;
+
+          if (!tokens) {
+            return new XpathSelector(selectorText, debug);
+          }
 
           if (tokens.length !== 1) {
             // Comma-separate selector - can't optimize further
@@ -3273,6 +3280,46 @@ var ExtendedCss = (function () {
 
         matches(element) {
           return element[utils.matchesPropertyName](this.selectorText);
+        },
+
+        isDebugging
+      };
+      /**
+       * This class represents an xpath selector.
+       * @param {string} selectorText
+       * @param {boolean=} debug
+       * @final
+       */
+
+      function XpathSelector(selectorText, debug) {
+        this.selectorText = selectorText;
+        this.debug = debug;
+      }
+
+      XpathSelector.prototype = {
+        querySelectorAll() {
+          const xpathResult = document.evaluate(this.selectorText, document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
+          const result = [];
+          let node = null; // eslint-disable-next-line no-cond-assign
+
+          while (node = xpathResult.iterateNext()) {
+            result.push(node);
+          }
+
+          return result;
+        },
+
+        matches(element) {
+          const xpathResult = document.evaluate(this.selectorText, document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
+          let node = null; // eslint-disable-next-line no-cond-assign
+
+          while (node = xpathResult.iterateNext()) {
+            if (node === element) {
+              return true;
+            }
+          }
+
+          return false;
         },
 
         isDebugging

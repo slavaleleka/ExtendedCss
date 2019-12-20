@@ -270,12 +270,21 @@ QUnit.test('Test xpath selectors', (assert) => {
     let elements;
     let selector;
 
-    selector = ExtendedSelectorFactory.createSelector('//html[1]/body[1]/div[1]');
+    selector = ExtendedSelectorFactory.createSelector('//html/body');
     elements = selector.querySelectorAll();
     assert.equal(1, elements.length);
     assert.ok(selector.matches(elements[0]));
 
-    selector = ExtendedSelectorFactory.createSelector('//html[1]/body[2]/div[1]');
+    selector = ExtendedSelectorFactory.createSelector('//body/p');
+    elements = selector.querySelectorAll();
+    assert.equal(0, elements.length);
+
+    selector = ExtendedSelectorFactory.createSelector('//div[contains(text(),"special-test")]');
+    elements = selector.querySelectorAll();
+    assert.equal(1, elements.length);
+    assert.ok(selector.matches(elements[0]));
+
+    selector = ExtendedSelectorFactory.createSelector('//*[@class="test-xpath-class"]');
     elements = selector.querySelectorAll();
     assert.equal(1, elements.length);
     assert.ok(selector.matches(elements[0]));
