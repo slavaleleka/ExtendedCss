@@ -1,4 +1,4 @@
-/*! extended-css - v1.2.1 - Mon Jan 20 2020
+/*! extended-css - v1.2.1 - Tue Jan 21 2020
 * https://github.com/AdguardTeam/ExtendedCss
 * Copyright (c) 2020 Adguard ; Licensed LGPL-3.0
 */
@@ -3056,13 +3056,13 @@ var ExtendedCss = (function () {
             }
 
             return function (elem) {
-              return regex.test(elem.textContent);
+              return regex.test(elem.innerText);
             };
           }
 
           text = text.replace(/\\([\\()[\]"])/g, '$1');
           return function (elem) {
-            return elem.textContent.indexOf(text) > -1;
+            return elem.innerText.indexOf(text) > -1;
           };
         });
         Sizzle.selectors.pseudos['contains'] = containsPseudo;
