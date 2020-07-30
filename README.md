@@ -256,8 +256,7 @@ div:has-text(/test/):nth-ancestor(2)
 This pseudo-class allows to lookup the ancestor relative to the currently selected node.
 > **Limited to work properly only at the end of selector.**
 
-#### `:upward()` syntax
-
+**Syntax**
 ```
 /* selector parameter */
 subjectSelector:upward(targetSelector)
@@ -266,16 +265,11 @@ subjectSelector:upward(targetSelector)
 subjectSelector:upward(n)
 ```
 
-##### `subjectSelector`
-Can be a plain CSS selector, or a Sizzle compatible selector.
+**`subjectSelector`** — a plain CSS selector, or a Sizzle compatible selector
+**`targetSelector`** — a valid plain CSS selector
+**`n`** — positive number >= 1 and < 256, distance from the currently selected node
 
-##### `targetSelector`
-A valid plain CSS selector.
-
-##### `n`
-Positive number >= 1 and < 256, distance from the currently selected node.
-
-#### `:upward()` examples
+**Examples**
 
 ```
 div.child:upward(div[id])
@@ -292,7 +286,7 @@ Removes a matching element instead of hiding it or applying custom styles.
 Actually acts like [pseudo-property `remove`](#pseudo-property-remove).
 > **Limited to work properly only at the end of selector.**
 
-#### `:remove()` syntax
+**Syntax**
 
 ```
 selector:remove()
