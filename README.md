@@ -120,7 +120,7 @@ div[-ext-contains="banner"]
 div[-ext-contains="/this .* banner/"]
 ```
 
-> Please note that in this example only a `div` with `id=selected` will be selected, because the next element does not contain any text; `banner` is a part of code, not text.
+> Please note that in this example only a `div` with `id=selected` will be selected, because the next element does not contain any text; `banner` is a part of code, not a text.
 
 <a id="extended-css-matches-css"></a>
 ### Pseudo-class `:matches-css()`
