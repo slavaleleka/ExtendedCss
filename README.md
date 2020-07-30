@@ -25,8 +25,7 @@ Module for applying CSS styles with extended selection properties.
 
 Draft CSS 4.0 specification describes [pseudo-class `:has`](https://drafts.csswg.org/selectors/#relational). Unfortunately, it is not yet supported by browsers.
 
-#### `:has()` syntax
-
+**Syntax**
 ```
 :has(selector)
 ```
@@ -40,17 +39,17 @@ Supported synonyms for better compatibility: `:-abp-has`, `:if`.
 
 Pseudo-class `:has()` selects the elements that includes the elements that fit to `selector`.
 
-#### `:has()` examples
+**Examples**
 
-##### Selecting  all `div` elements, which contain an element with the `banner` class.
+Selecting  all `div` elements, which contain an element with the `banner` class:
 
-**HTML code**
 ```html
+<!-- HTML code -->
 <div>Do not select this div</div>
 <div>Select this div<span class="banner"></span></div>
 ```
 
-**Selector**
+Selector:
 ```
 div:has(.banner)
 ```
@@ -70,8 +69,7 @@ This pseudo-class is basically a shortcut for `:not(:has())`. It is supported by
 
 This pseudo-class principle is very simple: it allows to select the elements that contain specified text or which content matches a specified regular expression. Regex flags are supported. Please note, that this pseudo-class uses `textContent` element property for matching (and not the `innerHTML`).
 
-#### `:contains()` syntax
-
+**Syntax**
 ```
 // matching by plain text
 :contains(text)
@@ -91,24 +89,23 @@ Backward compatible syntax:
 
 Supported synonyms for better compatibility: `:-abp-contains`, `:has-text`.
 
-#### `:contains()` examples
-
-##### Selecting all `div` elements, which contain text `banner`.
-
-**HTML code**
+**Examples**
+Selecting all `div` elements, which contain text `banner`:
 ```html
+<!-- HTML code -->
 <div>Do not select this div</div>
 <div id="selected">Select this div (banner)</div>
 <div>Do not select this div <div class="banner"></div></div>
 ```
 
-**Selector**
+Selector:
 ```
 // matching by plain text
 div:contains(banner)
 
 // matching by a regular expression
 div:contains(/this .* banner/)
+
 // also with regex flags
 div:contains(/this .* banner/gi)
 ```
@@ -129,8 +126,7 @@ Please note that in this example only a `div` with `id=selected` will be selecte
 
 These pseudo-classes allow to select an element by its current style property. The work of this pseudo-class is based on using the [`window.getComputedStyle`](https://developer.mozilla.org/en-US/docs/Web/API/Window/getComputedStyle) function.
 
-#### `:matches-css()` syntax
-
+**Syntax**
 ```
 /* element style matching */
 selector:matches-css(property-name ":" pattern)
@@ -149,23 +145,18 @@ selector[-ext-matches-css-after="property-name ":" pattern"]
 selector[-ext-matches-css-before="property-name ":" pattern"]
 ```
 
-##### `property-name`
-A name of CSS property to check the element for.
-
-##### `pattern`
-This can be either a value pattern that is using the same simple wildcard matching as in the basic url filtering rules or it can be a regular expression. For this type of matching, AdGuard always does matching in a case insensitive manner.
-
-In the case of a regular expression, the pattern looks like `/regex/`.
+- `property-name` — a name of CSS property to check the element for
+- `pattern` —  a value pattern that is using the same simple wildcard matching as in the basic url filtering rules OR a regular expression. For this type of matching, AdGuard always does matching in a case insensitive manner. In the case of a regular expression, the pattern looks like `/regex/`.
 
 > * For non-regex patterns, (`,`),[`,`] must be unescaped, because we require escaping them in the filtering rules.
+
 > * For regex patterns, ",\ should be escaped, because we manually escape those in extended-css-selector.js.
 
-#### `:matches-css()` examples
+**Examples**
 
-##### Selecting all `div` elements which contain pseudo-class `::before` with specified content.
-
-**HTML code**
+Selecting all `div` elements which contain pseudo-class `::before` with specified content:
 ```html
+<!-- HTML code -->
 <style type="text/css">
     #to-be-blocked::before {
         content: "Block me"
@@ -175,7 +166,7 @@ In the case of a regular expression, the pattern looks like `/regex/`.
 <div id="not-to-be-blocked" class="banner"></div>
 ```
 
-**Selector**
+Selector:
 ```
 // Simple matching
 div.banner:matches-css-before(content: block me)
@@ -201,24 +192,20 @@ This pseudo-class allows to select an element by evaluating a XPath expression.
 
 The :xpath(...) pseudo is different than other pseudo-classes. Whereas all other operators are used to filter down a resultset of elements, the :xpath(...) operator can be used both to create a new resultset or filter down an existing one. For this reason, subject selector is optional. For example, an :xpath(...) operator could be used to create a new resultset consisting of all ancestors elements of a subject element, something not otherwise possible with either plain CSS selectors or other procedural operators.
 
-#### `:xpath()` syntax
-
+**Syntax**
 ```
 [selector]:xpath(expression)
 ```
 
-##### `selector`
-Optional. Can be a plain CSS selector, or a Sizzle compatible selector.
+- `selector`- optional, a plain CSS selector, or a Sizzle compatible selector
+- `expression` — a valid XPath expression
 
-##### `expression`
-A valid XPath expression.
-
-#### `:xpath()` examples
-
+**Examples**
 ```
 // Filtering results from selector
 div:xpath(//*[@class="test-xpath-class"])
 div:has-text(/test-xpath-content/):xpath(../../..)
+
 // Use xpath only to select elements
 facebook.com##:xpath(//div[@id="stream_pagelet"]//div[starts-with(@id,"hyperfeed_story_id_")][.//h6//span/text()="People You May Know"])
 ```
@@ -231,22 +218,17 @@ This pseudo-class allows to lookup the nth ancestor relative to the currently se
 
 It is a low-overhead equivalent to :xpath(..[/..]*)
 
-#### `:nth-ancestor()` syntax
-
+**Syntax**
 ```
 selector:nth-ancestor(n)
 ```
+- `selector` — a plain CSS selector, or a Sizzle compatible selector.
+- `n` — positive number >= 1 and < 256, distance from the currently selected node.
 
-##### `selector`
-Can be a plain CSS selector, or a Sizzle compatible selector.
-
-##### `n`
-Positive number >= 1 and < 256, distance from the currently selected node.
-
-#### `:nth-ancestor()` examples
-
+**Examples**
 ```
 div.test:nth-ancestor(4)
+
 div:has-text(/test/):nth-ancestor(2)
 ```
 
@@ -264,13 +246,11 @@ subjectSelector:upward(targetSelector)
 /* number parameter */
 subjectSelector:upward(n)
 ```
-
 - `subjectSelector` — a plain CSS selector, or a Sizzle compatible selector
 - `targetSelector` — a valid plain CSS selector
 - `n` — positive number >= 1 and < 256, distance from the currently selected node
 
 **Examples**
-
 ```
 div.child:upward(div[id])
 div:contains(test):upward(div[class^="parent-wrapper-")
@@ -287,11 +267,10 @@ Actually acts like [pseudo-property `remove`](#pseudo-property-remove).
 > **Limited to work properly only at the end of selector.**
 
 **Syntax**
-
 ```
 selector:remove()
 ```
-**`selector`** — can be a plain CSS selector, or a Sizzle compatible selector.
+- `selector` — a plain CSS selector, or a Sizzle compatible selector
 
 > Please note, that all style properties will be ignored if `:remove()` pseudo-class is used.
 
