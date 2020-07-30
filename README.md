@@ -87,7 +87,7 @@ Backward compatible syntax:
 [-ext-contains="/regex/"]
 ```
 
-Supported synonyms for better compatibility: `:-abp-contains`, `:has-text`.
+> Supported synonyms for better compatibility: `:-abp-contains`, `:has-text`.
 
 **Examples**
 
