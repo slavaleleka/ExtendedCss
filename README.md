@@ -10,6 +10,7 @@ Module for applying CSS styles with extended selection properties.
   * [Pseudo-class :xpath()](#extended-css-xpath)
   * [Pseudo-class :nth-ancestor()](#extended-css-nth-ancestor)
   * [Pseudo-class :upward()](#extended-css-upward)
+  * [Pseudo-class :remove()](#extended-css-remove)
   * [Selectors debug mode](#selectors-debug-mode)
   * [Pseudo-property `remove`](#pseudo-property-remove)
 * [Usage](#usage)
@@ -283,6 +284,23 @@ div:contains(test):upward(div[class^="parent-wrapper-")
 div.test:upward(4)
 div:has-text(/test/):upward(2)
 ```
+
+<a id="extended-css-remove"></a>
+### Pseudo-class `:remove()`
+
+Removes a matching element instead of hiding it or applying custom styles. 
+Actually acts like [pseudo-property `remove`](#pseudo-property-remove).
+> **Limited to work properly only at the end of selector.**
+
+#### `:remove()` syntax
+
+```
+selector:remove()
+```
+##### `selector`
+Can be a plain CSS selector, or a Sizzle compatible selector.
+
+> Please note, that all style properties will be ignored if `:remove()` pseudo-class is used.
 
 ### Selectors debug mode
 
