@@ -297,8 +297,7 @@ Actually acts like [pseudo-property `remove`](#pseudo-property-remove).
 ```
 selector:remove()
 ```
-##### `selector`
-Can be a plain CSS selector, or a Sizzle compatible selector.
+**`selector`** — can be a plain CSS selector, or a Sizzle compatible selector.
 
 > Please note, that all style properties will be ignored if `:remove()` pseudo-class is used.
 
