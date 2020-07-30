@@ -90,6 +90,7 @@ Backward compatible syntax:
 Supported synonyms for better compatibility: `:-abp-contains`, `:has-text`.
 
 **Examples**
+
 Selecting all `div` elements, which contain text `banner`:
 ```html
 <!-- HTML code -->
