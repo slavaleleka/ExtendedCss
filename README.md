@@ -265,9 +265,9 @@ subjectSelector:upward(targetSelector)
 subjectSelector:upward(n)
 ```
 
-**`subjectSelector`** — a plain CSS selector, or a Sizzle compatible selector
-**`targetSelector`** — a valid plain CSS selector
-**`n`** — positive number >= 1 and < 256, distance from the currently selected node
+- `subjectSelector` — a plain CSS selector, or a Sizzle compatible selector
+- `targetSelector` — a valid plain CSS selector
+- `n` — positive number >= 1 and < 256, distance from the currently selected node
 
 **Examples**
 
