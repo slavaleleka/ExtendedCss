@@ -10,9 +10,8 @@ Module for applying CSS styles with extended selection properties.
   * [Pseudo-class :xpath()](#extended-css-xpath)
   * [Pseudo-class :nth-ancestor()](#extended-css-nth-ancestor)
   * [Pseudo-class :upward()](#extended-css-upward)
-  * [Pseudo-class :remove()](#extended-css-remove)
+  * [Pseudo-class and pseudo-property `remove`](#remove-pseudos)
   * [Selectors debug mode](#selectors-debug-mode)
-  * [Pseudo-property `remove`](#pseudo-property-remove)
 * [Usage](#usage)
 * [Debugging extended selectors](#debugging-extended-selectors)
 * [Projects using Extended Css](#projects-using-extended-css)
@@ -189,7 +188,7 @@ div.banner[-ext-matches-css-before="content: /block me/"]
 ### Pseudo-class `:xpath()`
 
 This pseudo-class allows to select an element by evaluating a XPath expression.
-> **Limited to work properly only at the end of selector.**
+> **Limited to work properly only at the end of selector, except of [pseudo-class :remove()](#remove-pseudos).**
 
 The :xpath(...) pseudo is different than other pseudo-classes. Whereas all other operators are used to filter down a resultset of elements, the :xpath(...) operator can be used both to create a new resultset or filter down an existing one. For this reason, subject selector is optional. For example, an :xpath(...) operator could be used to create a new resultset consisting of all ancestors elements of a subject element, something not otherwise possible with either plain CSS selectors or other procedural operators.
 
@@ -215,7 +214,7 @@ facebook.com##:xpath(//div[@id="stream_pagelet"]//div[starts-with(@id,"hyperfeed
 ### Pseudo-class `:nth-ancestor()`
 
 This pseudo-class allows to lookup the nth ancestor relative to the currently selected node.
-> **Limited to work properly only at the end of selector, except of [pseudo-class :remove()](#extended-css-remove).**
+> **Limited to work properly only at the end of selector, except of [pseudo-class :remove()](#remove-pseudos).**
 
 It is a low-overhead equivalent to `:xpath(..[/..]*)`.
 
@@ -237,7 +236,7 @@ div:has-text(/test/):nth-ancestor(2)
 ### Pseudo-class `:upward()`
 
 This pseudo-class allows to lookup the ancestor relative to the currently selected node.
-> **Limited to work properly only at the end of selector.**
+> **Limited to work properly only at the end of selector, except of [pseudo-class :remove()](#remove-pseudos).**
 
 **Syntax**
 ```
@@ -260,27 +259,34 @@ div.test:upward(4)
 div:has-text(/test/):upward(2)
 ```
 
-<a id="extended-css-remove"></a>
-### Pseudo-class `:remove()`
+<a id="remove-pseudos"></a>
+### Pseudo-class and pseudo-property `remove`
 
-Removes a matching element instead of hiding it or applying custom styles. 
-Actually acts like [pseudo-property `remove`](#pseudo-property-remove).
-> **Limited to work properly only at the end of selector.**
+Sometimes, it is necessary to remove a matching element instead of hiding it or applying custom styles. In order to do it, you can use pseudo-class `:remove()` as well as pseudo-property `remove`.
+
+> **Pseudo-class `:remove()` is limited to work properly only at the end of selector.**
 
 **Syntax**
 ```
+! pseudo-class
 selector:remove()
+
+! pseudo-property
+selector { remove: true; }
 ```
 - `selector` — a plain CSS selector, or a Sizzle compatible selector
 
 **Examples**
 ```
-div.child:remove()
-div.test:upward(4):remove()
+div.inner:remove()
+div:has(> div[ad-attr]):remove()
 div:xpath(../..):remove()
+
+div:contains(target text) { remove: true; }
+div[class]:has(> a:not([id])) { remove: true; }
 ```
 
-> Please note, that all style properties will be ignored if `:remove()` pseudo-class is used.
+> Please note, that all style properties will be ignored if `:remove()` pseudo-class or `remove` pseudo-property is used.
 
 ### Selectors debug mode
 
