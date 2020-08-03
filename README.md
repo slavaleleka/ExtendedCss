@@ -215,7 +215,7 @@ facebook.com##:xpath(//div[@id="stream_pagelet"]//div[starts-with(@id,"hyperfeed
 ### Pseudo-class `:nth-ancestor()`
 
 This pseudo-class allows to lookup the nth ancestor relative to the currently selected node.
-> **Limited to work properly only at the end of selector.**
+> **Limited to work properly only at the end of selector, except of [pseudo-class `remove`](#extended-css-remove).**
 
 It is a low-overhead equivalent to `:xpath(..[/..]*)`.
 
@@ -272,6 +272,13 @@ Actually acts like [pseudo-property `remove`](#pseudo-property-remove).
 selector:remove()
 ```
 - `selector` — a plain CSS selector, or a Sizzle compatible selector
+
+**Examples**
+```
+div.child:remove()
+div.test:upward(4):remove()
+div:xpath(../..):remove()
+```
 
 > Please note, that all style properties will be ignored if `:remove()` pseudo-class is used.
 
