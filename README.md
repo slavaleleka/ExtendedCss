@@ -10,7 +10,7 @@ Module for applying CSS styles with extended selection properties.
   * [Pseudo-class :xpath()](#extended-css-xpath)
   * [Pseudo-class :nth-ancestor()](#extended-css-nth-ancestor)
   * [Pseudo-class :upward()](#extended-css-upward)
-  * [Pseudo-class and pseudo-property `remove`](#remove-pseudos)
+  * [Pseudo-class :remove() and pseudo-property `remove`](#remove-pseudos)
   * [Selectors debug mode](#selectors-debug-mode)
 * [Usage](#usage)
 * [Debugging extended selectors](#debugging-extended-selectors)
@@ -260,7 +260,7 @@ div:has-text(/test/):upward(2)
 ```
 
 <a id="remove-pseudos"></a>
-### Pseudo-class and pseudo-property `remove`
+### Pseudo-class `:remove()` and pseudo-property `remove`
 
 Sometimes, it is necessary to remove a matching element instead of hiding it or applying custom styles. In order to do it, you can use pseudo-class `:remove()` as well as pseudo-property `remove`.
 
@@ -301,13 +301,6 @@ Sometimes, you might need to check the performance of a given selector or a styl
 ```
 .banner { display: none; debug: global; }
 ```
-
-### Pseudo-property `remove`
-Sometimes, it is necessary to remove a matching element instead of hiding it or applying custom styles. In order to do it, you can use a special style property: `remove`.
-
-`.banner { remove: true; }`
-
-> Please note, that other style properties will be ignored if `remove` is specified.
 
 ### Usage
 
