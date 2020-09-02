@@ -293,6 +293,7 @@ div:matches-property("memoizedProps._owner.src"="/ad/")
 <details>
   <summary>For filter maintainers</summary>
 
+
   To check element properties, do:
   1. Select the element on the page.
   2. Go to Console tab and run `console.dir($0)`.
