@@ -8,6 +8,7 @@ Module for applying CSS styles with extended selection properties.
   * [Pseudo-class :contains()](#extended-css-contains)
   * [Pseudo-class :matches-css()](#extended-css-matches-css)
   * [Pseudo-class :matches-attr()](#extended-css-matches-attr)
+  * [Pseudo-class :matches-property()](#extended-css-matches-property)
   * [Pseudo-class :xpath()](#extended-css-xpath)
   * [Pseudo-class :nth-ancestor()](#extended-css-nth-ancestor)
   * [Pseudo-class :upward()](#extended-css-upward)
@@ -149,9 +150,9 @@ selector[-ext-matches-css-before="property-name ":" pattern"]
 - `property-name` — a name of CSS property to check the element for
 - `pattern` —  a value pattern that is using the same simple wildcard matching as in the basic url filtering rules OR a regular expression. For this type of matching, AdGuard always does matching in a case insensitive manner. In the case of a regular expression, the pattern looks like `/regex/`.
 
-> For non-regex patterns, (`,`),[`,`] must be unescaped, because we require escaping them in the filtering rules.
+> For non-regex patterns, `(`,`)`,`[`,`]` must be unescaped, because we require escaping them in the filtering rules.
 
-> For regex patterns, ",\ should be escaped, because we manually escape those in extended-css-selector.js.
+> For regex patterns, `"` and `\` should be escaped, because we manually escape those in extended-css-selector.js.
 
 **Examples**
 
@@ -188,22 +189,23 @@ div.banner[-ext-matches-css-before="content: /block me/"]
 <a id="extended-css-matches-attr"></a>
 ### Pseudo-class `:matches-attr()`
 
-These pseudo-classes allow to select an element by its attributes, especially if they are randomized.
+This pseudo-class allows to select an element by its attributes, especially if they are randomized.
 
 **Syntax**
 ```
-/* element style matching */
-selector:matches-attr(/attrNameRegexp/ "=" /attrValueRegexp/)
+selector:matches-attr("name"[="value"])
 ```
 
-- `attrNameRegexp` — regular expression for attribute name
-- `attrValueRegexp` — regular expression for attribute value
+- `name` — attribute name OR regular expression for attribute name
+- `value` — optional, attribute value OR regular expression for attribute value
+
+> For regex patterns, `"` and `\` should be escaped.
 
 **Examples**
 
 ```html
 <!-- HTML code -->
-<div id="targer1" class="matches-attr" hsd4jkf-link="ssdgsg-banner_240x400"></div>
+<div id="targer1" class="matches-attr" ad-link="ssdgsg-banner_240x400"></div>
 
 <div id="targer2" class="has matches-attr">
   <div data-sdfghlhw="adbanner"></div>
@@ -226,18 +228,75 @@ selector:matches-attr(/attrNameRegexp/ "=" /attrValueRegexp/)
 ```
 
 ```
-// for blocking div#targer1
-div:matches-attr(/-link/ = /-banner_/)
+// for div#targer1
+div:matches-attr("ad-link")
 
-// for blocking div#targer2
-div:has(> div:matches-attr(/data-/ = /adbanner/))
+// for div#targer2
+div:has(> div:matches-attr("/data-/"="adbanner"))
 
-// for blocking div#targer3
-div:matches-attr(/-unit/ = /click/):has(> span:contains(ads))
+// for div#targer3
+div:matches-attr("/-unit/"="/click/"):has(> span:contains(ads))
 
-// for blocking div#targer4
-*[class]:matches-attr(/.{5,}delay$/ = /^[0-9]*$/):upward(2)
+// for div#targer4
+*[class]:matches-attr("/.{5,}delay$/"="/^[0-9]*$/"):upward(2)
 ```
+
+<a id="extended-css-matches-property"></a>
+### Pseudo-class `:matches-property()`
+
+This pseudo-class allows to select an element by its attributes, especially if they are randomized.
+
+**Syntax**
+```
+selector:matches-property("name"[="value"])
+```
+
+- `name` — property name OR regular expression for property name
+- `value` — optional, property value OR regular expression for property value
+
+> For regex patterns, `"` and `\` should be escaped.
+
+> `name` supports regexp for property in chain, e.g. `prop./^unit[\\d]{4}$/.type`
+
+**Examples**
+
+```js
+divProperties = {
+    id: 1,
+    check: {
+        track: true,
+        unit_2ksdf1: true,
+    },
+    memoizedProps: {
+        key: null,
+        tag: 12,
+        _owner: {
+            effectTag: 1,
+            src: 'ad.com',
+        },
+    },
+};
+```
+
+```
+// element with such properties can be matched by any of such rules:
+
+div:matches-property("check.track")
+
+div:matches-property("check./^unit_.{4,6}$/"))
+
+div:matches-property("memoizedProps.key"="null")
+
+div:matches-property("memoizedProps._owner.src"="/ad/")
+```
+
+<details>
+  <summary>For filter maintainers</summary>
+
+  To check element properties, do:
+  1. Select the element on the page.
+  2. Go to Console tab and run `console.dir($0)`.
+</details>
 
 <a id="extended-css-xpath"></a>
 ### Pseudo-class `:xpath()`
