@@ -291,7 +291,7 @@ div:matches-property("memoizedProps._owner.src"="/ad/")
 ```
 
 <details>
-  <summary>**For filter maintainers**</summary>
+  **<summary>For filter maintainers</summary>**
 
 
   To check element properties, do:
