@@ -39,6 +39,10 @@
     #case8-blocked>.before::before {
       content: "Block me please"
     }
+
+    .case18-test {
+      height: 20px;
+    }
   </style>
   <div id="container" class="container">
     <div id="case1">
@@ -101,6 +105,37 @@
     <div id="case16">
       <div id="case16-inner" style="background: white;">
         <div class="banner"></div>
+      </div>
+    </div>
+    <div id="case17">
+      <div id="case17-inner" class="test_item" style="padding-bottom: 16px;">
+        <a class="banner">
+          <img atl="ad" width="50">
+        </a>
+      </div>
+    </div>
+    <div id="case18">
+      <div>
+        <div case18-parent class="case18-test">
+          <div case18-child class="case18-test"></div>
+        </div>
+        <div left-over></div>
+      </div>
+      <div>
+        <div case18-target class="case18-test">
+        </div>
+      </div>
+    </div>
+    <div id="case19">
+      <div id="case19-property-match">
+      </div>
+      <div id="case19-property-no-match">
+      </div>
+      <div id="case19-chain-property-match" class="match">
+      </div>
+      <div id="case19-chain-property-no-match">
+      </div>
+      <div id="case19-property-null">
       </div>
     </div>
 

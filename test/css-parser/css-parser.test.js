@@ -1,5 +1,4 @@
 /* eslint-disable max-len,no-multi-str */
-/* global QUnit */
 const { ExtendedCssParser } = exports;
 const { initializeSizzle } = exports;
 
@@ -30,13 +29,12 @@ QUnit.test('Test Sizzle tokenize cache', (assert) => {
 });
 
 QUnit.test('Parse an invalid selector', (assert) => {
-    assert.expect(1);
     assert.throws(() => {
         const cssText = 'div > { display:none; }';
         ExtendedCssParser.parseCss(cssText);
-    }, function (error) { // eslint-disable-line prefer-arrow-callback
-        return !!error;
-    }, 'Expected ExtendedCssParser to throw on an invalid selector');
+    },
+    (error) => error.toString().includes('parse error at position'),
+    'Expected ExtendedCssParser to throw on an invalid selector');
 });
 
 QUnit.test('Single invalid selector in a stylesheet', (assert) => {
@@ -44,6 +42,27 @@ QUnit.test('Single invalid selector in a stylesheet', (assert) => {
     const cssObject = ExtendedCssParser.parseCss(cssText);
     assert.ok(cssObject instanceof Array);
     assert.equal(cssObject.length, 1);
+});
+
+QUnit.test('Convert remove pseudo-class into remove pseudo-property', (assert) => {
+    const elementSelector = 'div:has(> div[class])';
+    const selectorText = `${elementSelector}:remove()`;
+    const cssText = `${selectorText} { display:none; }`;
+    const cssObject = ExtendedCssParser.parseCss(cssText);
+    assert.ok(cssObject instanceof Array);
+    assert.equal(cssObject.length, 1);
+    assert.equal(cssObject[0].selector.selectorText, elementSelector);
+    assert.ok(cssObject[0].style);
+    assert.equal(cssObject[0].style.remove, 'true');
+});
+
+QUnit.test('Scope handling', (assert) => {
+    const inputCssText = 'div:has(:scope > a > img[id]) { display: none }';
+    const cssObject = ExtendedCssParser.parseCss(inputCssText);
+    const expectedOutputSelectorText = 'div:has(> a > img[id])';
+    assert.ok(cssObject instanceof Array);
+    assert.equal(cssObject.length, 1);
+    assert.equal(cssObject[0].selector.selectorText, expectedOutputSelectorText);
 });
 
 QUnit.test('Parse stylesheet', (assert) => {
@@ -77,6 +96,7 @@ QUnit.test('Parse stylesheet with extended selectors', (assert) => {
         }';
 
     const cssObject = ExtendedCssParser.parseCss(cssText);
+
     assert.ok(cssObject instanceof Array);
     assert.equal(cssObject.length, 2);
 

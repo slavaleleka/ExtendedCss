@@ -154,6 +154,7 @@ QUnit.test('Test attribute protection', (assert) => {
 });
 
 QUnit.test('Protection from recurring style fixes', (assert) => {
+    assert.expect(3);
     const done = assert.async();
 
     const testNode = document.getElementById('case11');
@@ -214,6 +215,7 @@ QUnit.test('Test using ExtendedCss.query for selectors validation', (assert) => 
 
 QUnit.test('Test debugging', (assert) => {
     assert.timeout(1000);
+    assert.expect(2);
     const done = assert.async();
 
     const selectors = [
@@ -244,6 +246,7 @@ QUnit.test('Test debugging', (assert) => {
 
 QUnit.test('Test global debugging', (assert) => {
     assert.timeout(1000);
+    assert.expect(5);
     const done = assert.async();
 
     const selectors = [
@@ -264,9 +267,9 @@ QUnit.test('Test global debugging', (assert) => {
             assert.ok(stats);
             assert.ok(stats.length, 3);
 
-            assert.equal(stats.filter(item => item.selectorText.indexOf('with-global-debug') !== -1).length, 1, JSON.stringify(stats));
-            assert.equal(stats.filter(item => item.selectorText.indexOf('without-debug-before-global') !== -1).length, 1, JSON.stringify(stats));
-            assert.equal(stats.filter(item => item.selectorText.indexOf('without-debug-after-global') !== -1).length, 1, JSON.stringify(stats));
+            assert.equal(stats.filter((item) => item.selectorText.indexOf('with-global-debug') !== -1).length, 1, JSON.stringify(stats));
+            assert.equal(stats.filter((item) => item.selectorText.indexOf('without-debug-before-global') !== -1).length, 1, JSON.stringify(stats));
+            assert.equal(stats.filter((item) => item.selectorText.indexOf('without-debug-after-global') !== -1).length, 1, JSON.stringify(stats));
 
             // Cleanup
             utils.logInfo = utilsLogInfo;
@@ -281,6 +284,7 @@ QUnit.test('Test global debugging', (assert) => {
 
 QUnit.test('Test style remove property', (assert) => {
     assert.timeout(1000);
+    assert.expect(2);
     const done = assert.async();
 
     const styleSheet = '#case-remove-property { remove: true }';
@@ -305,6 +309,7 @@ QUnit.test('Apply different rules to the same element', (assert) => {
 });
 
 QUnit.test('Protect only rule style', (assert) => {
+    assert.expect(2);
     const done = assert.async();
     assertElementStyle('case16-inner', { 'color': 'red', 'background': 'white' }, assert);
 
@@ -321,6 +326,7 @@ QUnit.test('Protect only rule style', (assert) => {
 });
 
 QUnit.test('Protected elements are removed only 50 times', (assert) => {
+    assert.expect(3);
     const done = assert.async();
     const protectorNode = document.getElementById('protect-node-inside');
     const id = 'case-remove-property-repeatedly';
@@ -351,4 +357,85 @@ QUnit.test('Protected elements are removed only 50 times', (assert) => {
         assert.ok(protectorNode.querySelector(`#${id}`));
         done();
     }, 9000);
+});
+
+QUnit.test('Strict style attribute matching', (assert) => {
+    const selector = 'div[class="test_item"][style="padding-bottom: 16px;"]:has(> a > img[width="50"])';
+    const styleSheet = `${selector} { display: none!important; }`;
+    const extendedCss = new ExtendedCss({ styleSheet });
+    extendedCss.apply();
+
+    assert.expect(4);
+    const done = assert.async();
+    const testNode = document.getElementById('case17-inner');
+    const testNodeStyleProps = window.getComputedStyle(testNode);
+    assert.strictEqual(testNodeStyleProps['padding-bottom'], '16px');
+    assert.strictEqual(testNodeStyleProps.display, 'none');
+
+    rAF(() => {
+        assert.strictEqual(testNodeStyleProps['padding-bottom'], '16px');
+        assert.strictEqual(testNodeStyleProps.display, 'none');
+        done();
+    }, 200);
+});
+
+QUnit.test('Test removing of parent and child elements matched by style + no id attr', (assert) => {
+    let parentEl = document.querySelector('div[case18-parent]');
+    assert.ok(parentEl, 'parentEl is present at test start');
+    let childEl = document.querySelector('div[case18-child]');
+    assert.ok(childEl, 'childEl is present at test start');
+    let targetEl = document.querySelector('div[case18-target]');
+    assert.ok(targetEl, 'targetEl is present at test start');
+
+    const styleSheet = '#case18 div:matches-css(height:/20px/) { remove: true; }';
+    const extendedCss = new ExtendedCss({ styleSheet });
+    extendedCss.apply();
+
+    parentEl = document.querySelector('div[case18-parent]');
+    assert.notOk(parentEl, 'parentEl should be removed by rule');
+    childEl = document.querySelector('div[case18-child]');
+    assert.notOk(childEl, 'childEl no longer exists because parentNode is removed');
+    targetEl = document.querySelector('div[case18-target]');
+    assert.notOk(targetEl, 'targetEl should be removed as well');
+});
+
+QUnit.test('matches-property -- regexp value', (assert) => {
+    const selector = '#case19 > div:matches-property("id"="/property-match/")';
+    const styleSheet = `${selector} { display: none!important; }`;
+    const extendedCss = new ExtendedCss({ styleSheet });
+    extendedCss.apply();
+
+    const matchEl = document.getElementById('case19-property-match');
+    const matchElStyleProps = window.getComputedStyle(matchEl);
+    assert.strictEqual(matchElStyleProps.display, 'none');
+
+    const noMatchEl = document.getElementById('case19-property-no-match');
+    const noMatchElStyleProps = window.getComputedStyle(noMatchEl);
+    assert.strictEqual(noMatchElStyleProps.display, 'block');
+});
+
+QUnit.test('matches-property -- chain with regexp', (assert) => {
+    const selector = '#case19 > div:matches-property("/class/.value"="match")';
+    const styleSheet = `${selector} { display: none!important; }`;
+    const extendedCss = new ExtendedCss({ styleSheet });
+    extendedCss.apply();
+
+    const matchEl = document.getElementById('case19-chain-property-match');
+    const matchElStyleProps = window.getComputedStyle(matchEl);
+    assert.strictEqual(matchElStyleProps.display, 'none');
+
+    const noMatchEl = document.getElementById('case19-chain-property-no-match');
+    const noMatchElStyleProps = window.getComputedStyle(noMatchEl);
+    assert.strictEqual(noMatchElStyleProps.display, 'block');
+});
+
+QUnit.test('matches-property -- access child prop of null prop', (assert) => {
+    const selector = '#case19 > div[class]:matches-property("firstChild.assignedSlot.test")';
+    const styleSheet = `${selector} { display: none!important; }`;
+    const extendedCss = new ExtendedCss({ styleSheet });
+    extendedCss.apply();
+
+    const matchEl = document.getElementById('case19-property-null');
+    const matchElStyleProps = window.getComputedStyle(matchEl);
+    assert.strictEqual(matchElStyleProps.display, 'block');
 });

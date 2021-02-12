@@ -1,6 +1,6 @@
-/*! extended-css - v1.2.11 - Thu Jul 30 2020
+/*! extended-css - v1.3.8 - Fri Dec 11 2020
 * https://github.com/AdguardTeam/ExtendedCss
-* Copyright (c) 2020 AdGuard ; Licensed LGPL-3.0
+* Copyright (c) 2020 AdGuard. Licensed LGPL-3.0
 */
 function _typeof(obj) {
   "@babel/helpers - typeof";
@@ -16,6 +16,53 @@ function _typeof(obj) {
   }
 
   return _typeof(obj);
+}
+
+function _slicedToArray(arr, i) {
+  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
+}
+
+function _toConsumableArray(arr) {
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+}
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+}
+
+function _arrayWithHoles(arr) {
+  if (Array.isArray(arr)) return arr;
+}
+
+function _iterableToArray(iter) {
+  if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
+}
+
+function _iterableToArrayLimit(arr, i) {
+  if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
+  var _arr = [];
+  var _n = true;
+  var _d = false;
+  var _e = undefined;
+
+  try {
+    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+      _arr.push(_s.value);
+
+      if (i && _arr.length === i) break;
+    }
+  } catch (err) {
+    _d = true;
+    _e = err;
+  } finally {
+    try {
+      if (!_n && _i["return"] != null) _i["return"]();
+    } finally {
+      if (_d) throw _e;
+    }
+  }
+
+  return _arr;
 }
 
 function _unsupportedIterableToArray(o, minLen) {
@@ -35,61 +82,12 @@ function _arrayLikeToArray(arr, len) {
   return arr2;
 }
 
-function _createForOfIteratorHelper(o, allowArrayLike) {
-  var it;
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
 
-  if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
-    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
-      if (it) o = it;
-      var i = 0;
-
-      var F = function () {};
-
-      return {
-        s: F,
-        n: function () {
-          if (i >= o.length) return {
-            done: true
-          };
-          return {
-            done: false,
-            value: o[i++]
-          };
-        },
-        e: function (e) {
-          throw e;
-        },
-        f: F
-      };
-    }
-
-    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  var normalCompletion = true,
-      didErr = false,
-      err;
-  return {
-    s: function () {
-      it = o[Symbol.iterator]();
-    },
-    n: function () {
-      var step = it.next();
-      normalCompletion = step.done;
-      return step;
-    },
-    e: function (e) {
-      didErr = true;
-      err = e;
-    },
-    f: function () {
-      try {
-        if (!normalCompletion && it.return != null) it.return();
-      } finally {
-        if (didErr) throw err;
-      }
-    }
-  };
+function _nonIterableRest() {
+  throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
 /**
@@ -111,16 +109,68 @@ function _createForOfIteratorHelper(o, allowArrayLike) {
 /* eslint-disable no-console */
 var utils = {};
 utils.MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+
+utils.isSafariBrowser = function () {
+  var isChrome = navigator.userAgent.indexOf('Chrome') > -1;
+  var isSafari = navigator.userAgent.indexOf('Safari') > -1;
+
+  if (isSafari) {
+    if (isChrome) {
+      // Chrome seems to have both Chrome and Safari userAgents
+      return false;
+    }
+
+    return true;
+  }
+
+  return false;
+}();
 /**
  * Converts regular expressions passed as pseudo class arguments into RegExp instances.
  * Have to unescape doublequote " as well, because we escape them while enclosing such
  * arguments with doublequotes, and sizzle does not automatically unescapes them.
  */
 
+
 utils.pseudoArgToRegex = function (regexSrc, flag) {
   flag = flag || 'i';
   regexSrc = regexSrc.trim().replace(/\\(["\\])/g, '$1');
   return new RegExp(regexSrc, flag);
+};
+/**
+ * Converts string to the regexp
+ * @param {string} str
+ * @returns {RegExp}
+ */
+
+
+utils.toRegExp = function (str) {
+  if (str[0] === '/' && str[str.length - 1] === '/') {
+    return new RegExp(str.slice(1, -1));
+  }
+
+  var escaped = str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(escaped);
+};
+
+utils.startsWith = function (str, prefix) {
+  // if str === '', (str && false) will return ''
+  // that's why it has to be !!str
+  return !!str && str.indexOf(prefix) === 0;
+};
+
+utils.endsWith = function (str, postfix) {
+  if (!str || !postfix) {
+    return false;
+  }
+
+  if (str.endsWith) {
+    return str.endsWith(postfix);
+  }
+
+  var t = String(postfix);
+  var index = str.lastIndexOf(t);
+  return index >= 0 && index === str.length - t.length;
 };
 /**
  * Helper function for creating regular expression from a url filter rule syntax.
@@ -153,24 +203,6 @@ utils.createURLRegex = function () {
     return str.replace(specialsRegex, '\\$&');
   };
 
-  var startsWith = function startsWith(str, prefix) {
-    return str && str.indexOf(prefix) === 0;
-  };
-
-  var endsWith = function endsWith(str, postfix) {
-    if (!str || !postfix) {
-      return false;
-    }
-
-    if (str.endsWith) {
-      return str.endsWith(postfix);
-    }
-
-    var t = String(postfix);
-    var index = str.lastIndexOf(t);
-    return index >= 0 && index === str.length - t.length;
-  };
-
   var replaceAll = function replaceAll(str, find, replace) {
     if (!str) {
       return str;
@@ -188,9 +220,9 @@ utils.createURLRegex = function () {
   var createRegexText = function createRegexText(str) {
     var regex = escapeRegExp(str);
 
-    if (startsWith(regex, regexConfiguration.maskStartUrl)) {
+    if (utils.startsWith(regex, regexConfiguration.maskStartUrl)) {
       regex = regex.substring(0, regexConfiguration.maskStartUrl.length) + replaceAll(regex.substring(regexConfiguration.maskStartUrl.length, regex.length - 1), '\|', '\\|') + regex.substring(regex.length - 1);
-    } else if (startsWith(regex, regexConfiguration.maskPipe)) {
+    } else if (utils.startsWith(regex, regexConfiguration.maskPipe)) {
       regex = regex.substring(0, regexConfiguration.maskPipe.length) + replaceAll(regex.substring(regexConfiguration.maskPipe.length, regex.length - 1), '\|', '\\|') + regex.substring(regex.length - 1);
     } else {
       regex = replaceAll(regex.substring(0, regex.length - 1), '\|', '\\|') + regex.substring(regex.length - 1);
@@ -200,13 +232,13 @@ utils.createURLRegex = function () {
     regex = replaceAll(regex, regexConfiguration.maskAnySymbol, regexConfiguration.regexAnySymbol);
     regex = replaceAll(regex, regexConfiguration.maskSeparator, regexConfiguration.regexSeparator);
 
-    if (startsWith(regex, regexConfiguration.maskStartUrl)) {
+    if (utils.startsWith(regex, regexConfiguration.maskStartUrl)) {
       regex = regexConfiguration.regexStartUrl + regex.substring(regexConfiguration.maskStartUrl.length);
-    } else if (startsWith(regex, regexConfiguration.maskPipe)) {
+    } else if (utils.startsWith(regex, regexConfiguration.maskPipe)) {
       regex = regexConfiguration.regexStartString + regex.substring(regexConfiguration.maskPipe.length);
     }
 
-    if (endsWith(regex, regexConfiguration.maskPipe)) {
+    if (utils.endsWith(regex, regexConfiguration.maskPipe)) {
       regex = regex.substring(0, regex.length - 1) + regexConfiguration.regexEndString;
     }
 
@@ -227,7 +259,7 @@ utils.createLocation = function (href) {
   anchor.href = href;
 
   if (anchor.host === '') {
-    anchor.href = anchor.href;
+    anchor.href = anchor.href; // eslint-disable-line no-self-assign
   }
 
   return anchor;
@@ -567,19 +599,21 @@ function isNumber(obj) {
 }
 /**
  * Returns path to element we will use as element identifier
- * @param {Element} el
+ * @param {Element} inputEl
  * @returns {string} - path to the element
  */
 
 
-utils.getNodeSelector = function (el) {
-  if (!(el instanceof Element)) {
+utils.getNodeSelector = function (inputEl) {
+  if (!(inputEl instanceof Element)) {
     throw new Error('Function received argument with wrong type');
   }
 
-  var path = [];
+  var el = inputEl;
+  var path = []; // we need to check '!!el' first because it is possible
+  // that some ancestor of the inputEl was removed before it
 
-  while (el.nodeType === Node.ELEMENT_NODE) {
+  while (!!el && el.nodeType === Node.ELEMENT_NODE) {
     var selector = el.nodeName.toLowerCase();
 
     if (el.id && typeof el.id === 'string') {
@@ -659,7 +693,8 @@ var cssUtils = function () {
 
 
   var reMatchesCss = /\:(matches-css(?:-after|-before)?)\(([a-z-\s]*\:\s*\/(?:\\.|[^\/])*?\/\s*)\)/g;
-  var reContains = /:(?:-abp-)?(contains|has-text)\((\s*\/(?:\\.|[^\/])*?\/\s*)\)/g; // Note that we require `/` character in regular expressions to be escaped.
+  var reContains = /:(?:-abp-)?(contains|has-text)\((\s*\/(?:\\.|[^\/])*?\/\s*)\)/g;
+  var reScope = /\(\:scope >/g; // Note that we require `/` character in regular expressions to be escaped.
 
   /**
    * Used for pre-processing pseudo-classes values with above two regexes.
@@ -668,6 +703,8 @@ var cssUtils = function () {
   var addQuotes = function addQuotes(_, c1, c2) {
     return ":".concat(c1, "(\"").concat(c2.replace(/["\\]/g, '\\$&'), "\")");
   };
+
+  var SCOPE_REPLACER = '(>';
   /**
    * Normalizes specified css text in a form that can be parsed by the
    * Sizzle engine.
@@ -679,16 +716,27 @@ var cssUtils = function () {
    * @return {string}
    */
 
-
   var normalize = function normalize(cssText) {
     cssText = cssText.replace(reAttrFallback, evaluateMatch);
     cssText = cssText.replace(reMatchesCss, addQuotes);
     cssText = cssText.replace(reContains, addQuotes);
+    cssText = cssText.replace(reScope, SCOPE_REPLACER);
     return cssText;
   };
 
+  var isSimpleSelectorValid = function isSimpleSelectorValid(selector) {
+    try {
+      document.querySelectorAll(selector);
+    } catch (e) {
+      return false;
+    }
+
+    return true;
+  };
+
   return {
-    normalize: normalize
+    normalize: normalize,
+    isSimpleSelectorValid: isSimpleSelectorValid
   };
 }();
 
@@ -700,28 +748,29 @@ var cssUtils = function () {
  * Released under the MIT license
  * https://js.foundation/
  *
- * Date: 2018-03-20
+ * Date: 2020-08-04
  */
 
 /**
  * Version of Sizzle patched by AdGuard in order to be used in the ExtendedCss module.
  * https://github.com/AdguardTeam/sizzle-extcss
- * 
+ *
  * Look for [AdGuard Patch] and ADGUARD_EXTCSS markers to find out what exactly was changed by us.
- * 
+ *
  * Global changes:
  * 1. Added additional parameters to the "Sizzle.tokenize" method so that it can be used for stylesheets parsing and validation.
  * 2. Added tokens re-sorting mechanism forcing slow pseudos to be matched last  (see sortTokenGroups).
  * 3. Fix the nonnativeSelectorCache caching -- there was no value corresponding to a key.
  * 4. Added Sizzle.compile call to the `:has` pseudo definition.
- * 
+ *
  * Changes that are applied to the ADGUARD_EXTCSS build only:
  * 1. Do not expose Sizzle to the global scope. Initialize it lazily via initializeSizzle().
  * 2. Removed :contains pseudo declaration -- its syntax is changed and declared outside of Sizzle.
- * 3. Removed declarations for the following non-standard pseudo classes: 
+ * 3. Removed declarations for the following non-standard pseudo classes:
  * :parent, :header, :input, :button, :text, :first, :last, :eq,
  * :even, :odd, :lt, :gt, :nth, :radio, :checkbox, :file,
  * :password, :image, :submit, :reset
+ * 4. Added es6 module export
  */
 var Sizzle;
 /**
@@ -730,7 +779,7 @@ var Sizzle;
  * and exposing it to the global scope.
  */
 
-function initializeSizzle() {
+var initializeSizzle = function initializeSizzle() {
   // jshint ignore:line
   if (!Sizzle) {
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -1354,7 +1403,7 @@ function initializeSizzle() {
             // setting a boolean content attribute,
             // since its presence should be enough
             // https://bugs.jquery.com/ticket/12359
-            docElem.appendChild(el).innerHTML = "<a id='" + expando + "'></a>" + "<select id='" + expando + "-\r\\' msallowcapture=''>" + "<option selected=''></option></select>"; // Support: IE8, Opera 11-12.16
+            docElem.appendChild(el).innerHTML = AGPolicy.createHTML("<a id='" + expando + "'></a>" + "<select id='" + expando + "-\r\\' msallowcapture=''>" + "<option selected=''></option></select>"); // Support: IE8, Opera 11-12.16
             // Nothing should be selected when empty strings follow ^= or $= or *=
             // The test attribute must be unknown in Opera but "safe" for WinRT
             // https://msdn.microsoft.com/en-us/library/ie/hh465388.aspx#attribute_section
@@ -1389,7 +1438,7 @@ function initializeSizzle() {
             }
           });
           assert(function (el) {
-            el.innerHTML = "<a href='' disabled='disabled'></a>" + "<select disabled='disabled'><option/></select>"; // Support: Windows 8 Native Apps
+            el.innerHTML = AGPolicy.createHTML("<a href='' disabled='disabled'></a>" + "<select disabled='disabled'><option/></select>"); // Support: Windows 8 Native Apps
             // The type and name attributes are restricted during .innerHTML assignment
 
             var input = document.createElement("input");
@@ -2047,7 +2096,7 @@ function initializeSizzle() {
       var sortTokenGroups = function () {
         /**
          * Splits compound selector into a list of simple selectors
-         * 
+         *
          * @param {*} tokens Tokens to split into groups
          * @returns an array consisting of token groups (arrays) and relation tokens.
          */
@@ -2086,7 +2135,7 @@ function initializeSizzle() {
           "PSEUDO": 60
         };
         var POSITIONAL_PSEUDOS = ["nth", "first", "last", "eq", "even", "odd", "lt", "gt", "not"];
-        /** 
+        /**
          * A function that defines the sort order.
          * Returns a value lesser than 0 if "left" is less than "right".
          */
@@ -2123,7 +2172,7 @@ function initializeSizzle() {
          * Sorts the tokens in order to mitigate the issues caused by the left-to-right matching.
          * The idea is change the tokens order so that Sizzle was matching fast selectors first (id, class),
          * and slow selectors after that (and here I mean our slow custom pseudo classes).
-         * 
+         *
          * @param {Array} tokens An array of tokens to sort
          * @returns {Array} A new re-sorted array
          */
@@ -2156,7 +2205,7 @@ function initializeSizzle() {
         /**
          * Sorts every tokens array inside of the specified "groups" array.
          * See "sortTokens" methods for more information on how tokens are sorted.
-         * 
+         *
          * @param {Array} groups An array of tokens arrays.
          * @returns {Array} A new array that consists of the same tokens arrays after sorting
          */
@@ -2178,9 +2227,34 @@ function initializeSizzle() {
         return sortTokenGroups;
       }();
       /**
+       * Creates custom policy to use TrustedTypes CSP policy
+       * https://w3c.github.io/webappsec-trusted-types/dist/spec/
+       */
+
+
+      var AGPolicy = function createPolicy() {
+        var defaultPolicy = {
+          createHTML: function createHTML(input) {
+            return input;
+          },
+          createScript: function createScript(input) {
+            return input;
+          },
+          createScriptURL: function createScriptURL(input) {
+            return input;
+          }
+        };
+
+        if (window.trustedTypes && window.trustedTypes.createPolicy) {
+          return window.trustedTypes.createPolicy("AGPolicy", defaultPolicy);
+        }
+
+        return defaultPolicy;
+      }();
+      /**
        * [AdGuard Patch]:
        * Removes trailing spaces from the tokens list
-       * 
+       *
        * @param {*} tokens An array of Sizzle tokens to post-process
        */
 
@@ -2210,7 +2284,7 @@ function initializeSizzle() {
        * [AdGuard Patch]:
        * This method processes parsed token groups, divides them into a number of selectors
        * and makes sure that each selector's tokens are cached properly in Sizzle.
-       * 
+       *
        * @param {*} groups Token groups (see {@link Sizzle.tokenize})
        * @returns {Array.<SelectorData>} An array of selectors data we got from the groups
        */
@@ -2248,13 +2322,13 @@ function initializeSizzle() {
        * Add an additional argument for Sizzle.tokenize which indicates that it
        * should not throw on invalid tokens, and instead should return tokens
        * that it has produced so far.
-       * 
+       *
        * One more additional argument that allow to choose if you want to receive sorted or unsorted tokens
        * The problem is that the re-sorted selectors are valid for Sizzle, but not for the browser.
        * options.returnUnsorted -- return unsorted tokens if true.
        * options.cacheOnly -- return cached result only. Required for unit-tests.
-       * 
-       * @param {*} options Optional configuration object with two additional flags 
+       *
+       * @param {*} options Optional configuration object with two additional flags
        * (options.tolerant, options.returnUnsorted, options.cacheOnly) -- see patches #5 and #6 notes
        */
 
@@ -2343,9 +2417,9 @@ function initializeSizzle() {
         }
 
         if (tolerant) {
-          /** 
+          /**
            * [AdGuard Patch]:
-           * In tolerant mode we return a special object that constists of 
+           * In tolerant mode we return a special object that constists of
            * an array of parsed selectors (and their tokens) and a "nextIndex" field
            * that points to an index after which we're not able to parse selectors farther.
            */
@@ -2856,7 +2930,7 @@ function initializeSizzle() {
       // https://msdn.microsoft.com/en-us/library/ms536429%28VS.85%29.aspx
 
       if (!assert(function (el) {
-        el.innerHTML = "<a href='#'></a>";
+        el.innerHTML = AGPolicy.createHTML("<a href='#'></a>");
         return el.firstChild.getAttribute("href") === "#";
       })) {
         addHandle("type|href|height|width", function (elem, name, isXML) {
@@ -2869,7 +2943,7 @@ function initializeSizzle() {
 
 
       if (!support.attributes || !assert(function (el) {
-        el.innerHTML = "<input/>";
+        el.innerHTML = AGPolicy.createHTML("<input/>");
         el.firstChild.setAttribute("value", "");
         return el.firstChild.getAttribute("value") === "";
       })) {
@@ -2902,7 +2976,9 @@ function initializeSizzle() {
   }
 
   return Sizzle;
-}
+};
+
+/* jshint ignore:end */
 
 /**
  * Copyright 2016 Adguard Software Ltd
@@ -2924,7 +3000,6 @@ function initializeSizzle() {
  */
 
 var StylePropertyMatcher = function (window) {
-  var isSafari = navigator.vendor && navigator.vendor.indexOf('Apple') > -1 && navigator.userAgent && !navigator.userAgent.match('CriOS');
   var isPhantom = !!window._phantom;
   var useFallback = isPhantom && !!window.getMatchedCSSRules;
   /**
@@ -2939,20 +3014,6 @@ var StylePropertyMatcher = function (window) {
     }
 
     return value;
-  };
-  /**
-   * Unlike Safari, Chrome and FF doublequotes url() property value.
-   * I suppose it would be better to leave it unquoted.
-   */
-
-
-  var removeUrlQuotes = function removeUrlQuotes(value) {
-    if (typeof value !== 'string' || value.indexOf('url("') < 0) {
-      return value;
-    }
-
-    var re = /url\(\"(.*?)\"\)/g;
-    return value.replace(re, 'url($1)');
   };
 
   var getComputedStyle = window.getComputedStyle.bind(window);
@@ -2988,19 +3049,40 @@ var StylePropertyMatcher = function (window) {
       if (style) {
         value = style.getPropertyValue(propertyName); // https://bugs.webkit.org/show_bug.cgi?id=93445
 
-        if (propertyName === 'opacity' && isSafari) {
+        if (propertyName === 'opacity' && utils.isSafariBrowser) {
           value = (Math.round(parseFloat(value) * 100) / 100).toString();
         }
       }
     }
-
-    value = removeUrlQuotes(value);
 
     if (propertyName === 'content') {
       value = removeContentQuotes(value);
     }
 
     return value;
+  };
+  /**
+   * Adds url parameter quotes for non-regex pattern
+   * @param {string} pattern
+   */
+
+
+  var addUrlQuotes = function addUrlQuotes(pattern) {
+    // for regex patterns
+    if (pattern[0] === '/' && pattern[pattern.length - 1] === '/' && pattern.indexOf('\\"') < 10) {
+      // e.g. /^url\\([a-z]{4}:[a-z]{5}/
+      // or /^url\\(data\\:\\image\\/gif;base64.+/
+      var re = /(\^)?url(\\)?\\\((\w|\[\w)/g;
+      return pattern.replace(re, '$1url$2\\\(\\"?$3');
+    } // for non-regex patterns
+
+
+    if (pattern.indexOf('url("') === -1) {
+      var _re = /url\((.*?)\)/g;
+      return pattern.replace(_re, 'url("$1")');
+    }
+
+    return pattern;
   };
   /**
    * Class that matches element style against the specified expression
@@ -3016,7 +3098,8 @@ var StylePropertyMatcher = function (window) {
     try {
       var index = propertyFilter.indexOf(':');
       this.propertyName = propertyFilter.substring(0, index).trim();
-      var pattern = propertyFilter.substring(index + 1).trim(); // Unescaping pattern
+      var pattern = propertyFilter.substring(index + 1).trim();
+      pattern = addUrlQuotes(pattern); // Unescaping pattern
       // For non-regex patterns, (,),[,] should be unescaped, because we require escaping them in filter rules.
       // For regex patterns, ",\ should be escaped, because we manually escape those in extended-css-selector.js.
 
@@ -3093,6 +3176,603 @@ var StylePropertyMatcher = function (window) {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var matcherUtils = {};
+matcherUtils.MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+/**
+ * Parses argument of matcher pseudo (for matches-attr and matches-property)
+ * @param {string} matcherFilter argument of pseudo class
+ * @returns {Array}
+ */
+
+matcherUtils.parseMatcherFilter = function (matcherFilter) {
+  var FULL_MATCH_MARKER = '"="';
+  var rawArgs = [];
+
+  if (matcherFilter.indexOf(FULL_MATCH_MARKER) === -1) {
+    // if there is only one pseudo arg
+    // e.g. :matches-attr("data-name") or :matches-property("inner.prop")
+    // Sizzle will parse it and get rid of quotes
+    // so it might be valid arg already without them
+    rawArgs.push(matcherFilter);
+  } else {
+    matcherFilter.split('=').forEach(function (arg) {
+      if (arg[0] === '"' && arg[arg.length - 1] === '"') {
+        rawArgs.push(arg.slice(1, -1));
+      }
+    });
+  }
+
+  return rawArgs;
+};
+/**
+ * @typedef {Object} ArgData
+ * @property {string} arg
+ * @property {boolean} isRegexp
+ */
+
+/**
+ * Parses raw matcher arg
+ * @param {string} rawArg
+ * @returns {ArgData}
+ */
+
+
+matcherUtils.parseRawMatcherArg = function (rawArg) {
+  var arg = rawArg;
+  var isRegexp = !!rawArg && rawArg[0] === '/' && rawArg[rawArg.length - 1] === '/';
+
+  if (isRegexp) {
+    // to avoid at least such case — :matches-property("//")
+    if (rawArg.length > 2) {
+      arg = utils.toRegExp(rawArg);
+    } else {
+      throw new Error("Invalid regexp: ".concat(rawArg));
+    }
+  }
+
+  return {
+    arg: arg,
+    isRegexp: isRegexp
+  };
+};
+/**
+ * @typedef Chain
+ * @property {Object} base
+ * @property {string} prop
+ * @property {string} value
+ */
+
+/**
+ * Checks if the property exists in the base object (recursively).
+ * @param {Object} base
+ * @param {ArgData[]} chain array of objects - parsed string property chain
+ * @param {Array} [output=[]] result acc
+ * @returns {Chain[]} array of objects
+ */
+
+
+matcherUtils.filterRootsByRegexpChain = function (base, chain) {
+  var output = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+  var tempProp = chain[0];
+
+  if (chain.length === 1) {
+    // eslint-disable-next-line no-restricted-syntax
+    for (var key in base) {
+      if (tempProp.isRegexp) {
+        if (tempProp.arg.test(key)) {
+          output.push({
+            base: base,
+            prop: key,
+            value: base[key]
+          });
+        }
+      } else if (tempProp.arg === key) {
+        output.push({
+          base: base,
+          prop: tempProp.arg,
+          value: base[key]
+        });
+      }
+    }
+
+    return output;
+  } // if there is a regexp prop in input chain
+  // e.g. 'unit./^ad.+/.src' for 'unit.ad-1gf2.src unit.ad-fgd34.src'),
+  // every base keys should be tested by regexp and it can be more that one results
+
+
+  if (tempProp.isRegexp) {
+    var nextProp = chain.slice(1);
+    var baseKeys = []; // eslint-disable-next-line no-restricted-syntax
+
+    for (var _key in base) {
+      if (tempProp.arg.test(_key)) {
+        baseKeys.push(_key);
+      }
+    }
+
+    baseKeys.forEach(function (key) {
+      var item = base[key];
+      matcherUtils.filterRootsByRegexpChain(item, nextProp, output);
+    });
+  } // avoid TypeError while accessing to null-prop's child
+
+
+  if (base === null) {
+    return;
+  }
+
+  var nextBase = base[tempProp.arg];
+  chain = chain.slice(1);
+
+  if (nextBase !== undefined) {
+    matcherUtils.filterRootsByRegexpChain(nextBase, chain, output);
+  }
+
+  return output;
+};
+/**
+ * Validates parsed args of matches-property pseudo
+ * @param {...ArgData} args
+ */
+
+
+matcherUtils.validatePropMatcherArgs = function () {
+  for (var _len = arguments.length, args = new Array(_len), _key2 = 0; _key2 < _len; _key2++) {
+    args[_key2] = arguments[_key2];
+  }
+
+  for (var i = 0; i < args.length; i += 1) {
+    if (args[i].isRegexp) {
+      if (!utils.startsWith(args[i].arg.toString(), '/') || !utils.endsWith(args[i].arg.toString(), '/')) {
+        return false;
+      } // simple arg check if it is not a regexp
+
+    } else if (!/^[\w-]+$/.test(args[i].arg)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Class that extends Sizzle and adds support for "matches-attr" pseudo element.
+ */
+
+var AttributesMatcher = function () {
+  /**
+   * Class that matches element attributes against the specified expressions
+   * @param {ArgData} nameArg - parsed name argument
+   * @param {ArgData} valueArg - parsed value argument
+   * @param {string} pseudoElement
+   * @constructor
+   *
+   * @member {string|RegExp} attrName
+   * @member {boolean} isRegexpName
+   * @member {string|RegExp} attrValue
+   * @member {boolean} isRegexpValue
+   */
+  var AttrMatcher = function AttrMatcher(nameArg, valueArg, pseudoElement) {
+    this.pseudoElement = pseudoElement;
+    this.attrName = nameArg.arg;
+    this.isRegexpName = nameArg.isRegexp;
+    this.attrValue = valueArg.arg;
+    this.isRegexpValue = valueArg.isRegexp;
+  };
+  /**
+   * Function to check if element attributes matches filter pattern
+   * @param {Element} element to check
+   */
+
+
+  AttrMatcher.prototype.matches = function (element) {
+    var elAttrs = element.attributes;
+
+    if (elAttrs.length === 0 || !this.attrName) {
+      return false;
+    }
+
+    var i = 0;
+
+    while (i < elAttrs.length) {
+      var attr = elAttrs[i];
+      var matched = false;
+      var attrNameMatched = this.isRegexpName ? this.attrName.test(attr.name) : this.attrName === attr.name;
+
+      if (!this.attrValue) {
+        // for :matches-attr("/regex/") or :matches-attr("attr-name")
+        matched = attrNameMatched;
+      } else {
+        var attrValueMatched = this.isRegexpValue ? this.attrValue.test(attr.value) : this.attrValue === attr.value;
+        matched = attrNameMatched && attrValueMatched;
+      }
+
+      if (matched) {
+        return true;
+      }
+
+      i += 1;
+    }
+  };
+  /**
+   * Creates a new pseudo-class and registers it in Sizzle
+   */
+
+
+  var extendSizzle = function extendSizzle(sizzle) {
+    // First of all we should prepare Sizzle engine
+    sizzle.selectors.pseudos['matches-attr'] = sizzle.selectors.createPseudo(function (attrFilter) {
+      var _matcherUtils$parseMa = matcherUtils.parseMatcherFilter(attrFilter),
+          _matcherUtils$parseMa2 = _slicedToArray(_matcherUtils$parseMa, 2),
+          rawName = _matcherUtils$parseMa2[0],
+          rawValue = _matcherUtils$parseMa2[1];
+
+      var nameArg = matcherUtils.parseRawMatcherArg(rawName);
+      var valueArg = matcherUtils.parseRawMatcherArg(rawValue);
+
+      if (!attrFilter || !matcherUtils.validatePropMatcherArgs(nameArg, valueArg)) {
+        throw new Error("Invalid argument of :matches-attr pseudo class: ".concat(attrFilter));
+      }
+
+      var matcher = new AttrMatcher(nameArg, valueArg);
+      return function (element) {
+        return matcher.matches(element);
+      };
+    });
+  }; // EXPOSE
+
+
+  return {
+    extendSizzle: extendSizzle
+  };
+}();
+
+/**
+ * Parses raw property arg
+ * @param {string} input
+ * @returns {ArgData[]} array of objects
+ */
+
+var parseRawPropChain = function parseRawPropChain(input) {
+  var PROPS_DIVIDER = '.';
+  var REGEXP_MARKER = '/';
+  var propsArr = [];
+  var str = input;
+
+  while (str.length > 0) {
+    if (utils.startsWith(str, PROPS_DIVIDER)) {
+      // for cases like '.prop.id' and 'nested..test'
+      throw new Error("Invalid chain property: ".concat(input));
+    }
+
+    if (!utils.startsWith(str, REGEXP_MARKER)) {
+      var isRegexp = false;
+      var dividerIndex = str.indexOf(PROPS_DIVIDER);
+
+      if (str.indexOf(PROPS_DIVIDER) === -1) {
+        // if there is no '.' left in str
+        // take the rest of str as prop
+        propsArr.push({
+          arg: str,
+          isRegexp: isRegexp
+        });
+        return propsArr;
+      } // else take prop from str
+
+
+      var prop = str.slice(0, dividerIndex); // for cases like 'asadf.?+/.test'
+
+      if (prop.indexOf(REGEXP_MARKER) > -1) {
+        // prop is '?+/'
+        throw new Error("Invalid chain property: ".concat(prop));
+      }
+
+      propsArr.push({
+        arg: prop,
+        isRegexp: isRegexp
+      }); // delete prop from str
+
+      str = str.slice(dividerIndex);
+    } else {
+      // deal with regexp
+      var propChunks = [];
+      propChunks.push(str.slice(0, 1)); // if str starts with '/', delete it from str and find closing regexp slash.
+      // note that chained property name can not include '/' or '.'
+      // so there is no checking for escaped characters
+
+      str = str.slice(1);
+      var regexEndIndex = str.indexOf(REGEXP_MARKER);
+
+      if (regexEndIndex < 1) {
+        // regexp should be at least === '/./'
+        // so we should avoid args like '/id' and 'test.//.id'
+        throw new Error("Invalid regexp: ".concat(REGEXP_MARKER).concat(str));
+      }
+
+      var _isRegexp = true; // take the rest regexp part
+
+      propChunks.push(str.slice(0, regexEndIndex + 1));
+
+      var _prop = utils.toRegExp(propChunks.join(''));
+
+      propsArr.push({
+        arg: _prop,
+        isRegexp: _isRegexp
+      }); // delete prop from str
+
+      str = str.slice(regexEndIndex + 1);
+    }
+
+    if (!str) {
+      return propsArr;
+    } // str should be like '.nextProp' now
+    // so 'zx.prop' or '.' is invalid
+
+
+    if (!utils.startsWith(str, PROPS_DIVIDER) || utils.startsWith(str, PROPS_DIVIDER) && str.length === 1) {
+      throw new Error("Invalid chain property: ".concat(input));
+    }
+
+    str = str.slice(1);
+  }
+};
+
+var convertTypeFromStr = function convertTypeFromStr(value) {
+  var numValue = Number(value);
+  var output;
+
+  if (!Number.isNaN(numValue)) {
+    output = numValue;
+  } else {
+    switch (value) {
+      case 'undefined':
+        output = undefined;
+        break;
+
+      case 'null':
+        output = null;
+        break;
+
+      case 'true':
+        output = true;
+        break;
+
+      case 'false':
+        output = false;
+        break;
+
+      default:
+        output = value;
+    }
+  }
+
+  return output;
+};
+
+var convertTypeIntoStr = function convertTypeIntoStr(value) {
+  var output;
+
+  switch (value) {
+    case undefined:
+      output = 'undefined';
+      break;
+
+    case null:
+      output = 'null';
+      break;
+
+    default:
+      output = value.toString();
+  }
+
+  return output;
+};
+/**
+ * Class that extends Sizzle and adds support for "matches-property" pseudo element.
+ */
+
+
+var ElementPropertyMatcher = function () {
+  /**
+   * Class that matches element properties against the specified expressions
+   * @param {ArgData[]} propsChainArg - array of parsed props chain objects
+   * @param {ArgData} valueArg - parsed value argument
+   * @param {string} pseudoElement
+   * @constructor
+   *
+   * @member {Array} chainedProps
+   * @member {boolean} isRegexpName
+   * @member {string|RegExp} propValue
+   * @member {boolean} isRegexpValue
+   */
+  var PropMatcher = function PropMatcher(propsChainArg, valueArg, pseudoElement) {
+    this.pseudoElement = pseudoElement;
+    this.chainedProps = propsChainArg;
+    this.propValue = valueArg.arg;
+    this.isRegexpValue = valueArg.isRegexp;
+  };
+  /**
+   * Function to check if element properties matches filter pattern
+   * @param {Element} element to check
+   */
+
+
+  PropMatcher.prototype.matches = function (element) {
+    var ownerObjArr = matcherUtils.filterRootsByRegexpChain(element, this.chainedProps);
+
+    if (ownerObjArr.length === 0) {
+      return false;
+    }
+
+    var matched = true;
+
+    if (this.propValue) {
+      for (var i = 0; i < ownerObjArr.length; i += 1) {
+        var realValue = ownerObjArr[i].value;
+
+        if (this.isRegexpValue) {
+          matched = this.propValue.test(convertTypeIntoStr(realValue));
+        } else {
+          // handle 'null' and 'undefined' property values set as string
+          if (realValue === 'null' || realValue === 'undefined') {
+            matched = this.propValue === realValue;
+            break;
+          }
+
+          matched = convertTypeFromStr(this.propValue) === realValue;
+        }
+
+        if (matched) {
+          break;
+        }
+      }
+    }
+
+    return matched;
+  };
+  /**
+   * Creates a new pseudo-class and registers it in Sizzle
+   */
+
+
+  var extendSizzle = function extendSizzle(sizzle) {
+    // First of all we should prepare Sizzle engine
+    sizzle.selectors.pseudos['matches-property'] = sizzle.selectors.createPseudo(function (propertyFilter) {
+      if (!propertyFilter) {
+        throw new Error('No argument is given for :matches-property pseudo class');
+      }
+
+      var _matcherUtils$parseMa = matcherUtils.parseMatcherFilter(propertyFilter),
+          _matcherUtils$parseMa2 = _slicedToArray(_matcherUtils$parseMa, 2),
+          rawProp = _matcherUtils$parseMa2[0],
+          rawValue = _matcherUtils$parseMa2[1]; // chained property name can not include '/' or '.'
+      // so regex prop names with such escaped characters are invalid
+
+
+      if (rawProp.indexOf('\\/') > -1 || rawProp.indexOf('\\.') > -1) {
+        throw new Error("Invalid property name: ".concat(rawProp));
+      }
+
+      var propsChainArg = parseRawPropChain(rawProp);
+      var valueArg = matcherUtils.parseRawMatcherArg(rawValue);
+      var propsToValidate = [].concat(_toConsumableArray(propsChainArg), [valueArg]);
+
+      if (!matcherUtils.validatePropMatcherArgs(propsToValidate)) {
+        throw new Error("Invalid argument of :matches-property pseudo class: ".concat(propertyFilter));
+      }
+
+      var matcher = new PropMatcher(propsChainArg, valueArg);
+      return function (element) {
+        return matcher.matches(element);
+      };
+    });
+  }; // EXPOSE
+
+
+  return {
+    extendSizzle: extendSizzle
+  };
+}();
+
+/**
+ * Copyright 2020 Adguard Software Ltd
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
+ * Class that extends Sizzle and adds support for :is() pseudo element.
+ */
+
+var IsAnyMatcher = function () {
+  /**
+   * Class that matches element by one of the selectors
+   * https://developer.mozilla.org/en-US/docs/Web/CSS/:is
+   * @param {Array} selectors
+   * @param {string} pseudoElement
+   * @constructor
+   */
+  var IsMatcher = function IsMatcher(selectors, pseudoElement) {
+    this.selectors = selectors;
+    this.pseudoElement = pseudoElement;
+  };
+  /**
+   * Function to check if element can be matched by any passed selector
+   * @param {Element} element to check
+   */
+
+
+  IsMatcher.prototype.matches = function (element) {
+    var isMatched = !!this.selectors.find(function (selector) {
+      var nodes = document.querySelectorAll(selector);
+      return Array.from(nodes).find(function (node) {
+        return node === element;
+      });
+    });
+    return isMatched;
+  };
+  /**
+   * Creates a new pseudo-class and registers it in Sizzle
+   */
+
+
+  var extendSizzle = function extendSizzle(sizzle) {
+    // First of all we should prepare Sizzle engine
+    sizzle.selectors.pseudos['is'] = sizzle.selectors.createPseudo(function (input) {
+      if (input === '') {
+        throw new Error("Invalid argument of :is pseudo-class: ".concat(input));
+      }
+
+      var selectors = input.split(',').map(function (s) {
+        return s.trim();
+      }); // collect valid selectors and log about invalid ones
+
+      var validSelectors = selectors.reduce(function (acc, selector) {
+        if (cssUtils.isSimpleSelectorValid(selector)) {
+          acc.push(selector);
+        } else {
+          utils.logInfo("Invalid selector passed to :is() pseudo-class: '".concat(selector, "'"));
+        }
+
+        return acc;
+      }, []);
+      var matcher = new IsMatcher(validSelectors);
+      return function (element) {
+        return matcher.matches(element);
+      };
+    });
+  };
+
+  return {
+    extendSizzle: extendSizzle
+  };
+}();
+
+/**
+ * Copyright 2016 Adguard Software Ltd
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /**
  * Extended selector factory module, for creating extended selector classes.
  *
@@ -3101,10 +3781,10 @@ var StylePropertyMatcher = function (window) {
  */
 
 var ExtendedSelectorFactory = function () {
-  // while addind new markers, AdGuard extension code also should be corrected:
-  // 'CssFilterRule.SUPPORTED_PSEUDO_CLASSES' and 'CssFilterRule.EXTENDED_CSS_MARKERS'
-  // at Extension/lib/filter/rules/css-filter-rule.js
-  var PSEUDO_EXTENSIONS_MARKERS = [':has', ':contains', ':has-text', ':matches-css', ':-abp-has', ':-abp-has-text', ':if', ':if-not', ':xpath', ':nth-ancestor', ':upward'];
+  // while adding new markers, constants in other AdGuard repos should be corrected
+  // AdGuard browser extension : CssFilterRule.SUPPORTED_PSEUDO_CLASSES and CssFilterRule.EXTENDED_CSS_MARKERS
+  // tsurlfilter, SafariConverterLib : EXT_CSS_PSEUDO_INDICATORS
+  var PSEUDO_EXTENSIONS_MARKERS = [':has', ':contains', ':has-text', ':matches-css', ':-abp-has', ':-abp-has-text', ':if', ':if-not', ':xpath', ':nth-ancestor', ':upward', ':remove', ':matches-attr', ':matches-property', ':-abp-contains', ':is'];
   var initialized = false;
   var Sizzle;
   /**
@@ -3121,7 +3801,13 @@ var ExtendedSelectorFactory = function () {
 
     Sizzle = initializeSizzle(); // Add :matches-css-*() support
 
-    StylePropertyMatcher.extendSizzle(Sizzle); // Add :contains, :has-text, :-abp-contains support
+    StylePropertyMatcher.extendSizzle(Sizzle); // Add :matches-attr() support
+
+    AttributesMatcher.extendSizzle(Sizzle); // Add :matches-property() support
+
+    ElementPropertyMatcher.extendSizzle(Sizzle); // Add :is() support
+
+    IsAnyMatcher.extendSizzle(Sizzle); // Add :contains, :has-text, :-abp-contains support
 
     var containsPseudo = Sizzle.selectors.createPseudo(function (text) {
       if (/^\s*\/.*\/[gmisuy]*\s*$/.test(text)) {
@@ -3162,8 +3848,17 @@ var ExtendedSelectorFactory = function () {
       return function (elem) {
         return Sizzle(selector, elem).length === 0;
       };
-    }); // Define :xpath support in Sizzle, to make tokenize work properly
+    });
+    registerParserOnlyTokens();
+  }
+  /**
+   * Registrate custom tokens for parser.
+   * Needed for proper work of pseudos:
+   * for checking if the token is last and pseudo-class arguments validation
+   */
 
+
+  function registerParserOnlyTokens() {
     Sizzle.selectors.pseudos['xpath'] = Sizzle.selectors.createPseudo(function (selector) {
       try {
         document.createExpression(selector, null);
@@ -3191,6 +3886,15 @@ var ExtendedSelectorFactory = function () {
         throw new Error("Invalid argument of :upward pseudo class: ".concat(input));
       } else if (Number.isInteger(+input) && (+input < 1 || +input >= 256)) {
         throw new Error("Invalid argument of :upward pseudo class: ".concat(input));
+      }
+
+      return function () {
+        return true;
+      };
+    });
+    Sizzle.selectors.pseudos['remove'] = Sizzle.selectors.createPseudo(function (input) {
+      if (input !== '') {
+        throw new Error("Invalid argument of :remove pseudo class: ".concat(input));
       }
 
       return function () {
@@ -3305,6 +4009,16 @@ var ExtendedSelectorFactory = function () {
         }
 
         return output;
+      } // argument of pseudo-class remove;
+      // it's defined only if remove is parsed as last token
+      // and it's valid only if remove arg is empty string
+
+
+      var removePart = this.getRemovePart();
+
+      if (typeof removePart !== 'undefined') {
+        var hasValidRemovePart = removePart === '';
+        return new RemoveSelector(selectorText, hasValidRemovePart, debug);
       }
 
       tokens = tokens[0];
@@ -3395,7 +4109,7 @@ var ExtendedSelectorFactory = function () {
 
           if (matches && matches.length > 1) {
             if (matches[0] === 'xpath') {
-              if (i + 1 !== tokensLength) {
+              if (this.isLastToken(tokens, i)) {
                 throw new Error('Invalid pseudo: \':xpath\' should be at the end of the selector');
               }
 
@@ -3403,7 +4117,7 @@ var ExtendedSelectorFactory = function () {
             }
 
             if (matches[0] === 'nth-ancestor') {
-              if (i + 1 !== tokensLength) {
+              if (this.isLastToken(tokens, i)) {
                 throw new Error('Invalid pseudo: \':nth-ancestor\' should be at the end of the selector');
               }
 
@@ -3435,6 +4149,22 @@ var ExtendedSelectorFactory = function () {
     },
 
     /**
+     * Checks if the token is last,
+     * except of remove pseudo-class
+     * @param {Array} tokens
+     * @param {number} i index of token
+     * @returns {boolean}
+     */
+    isLastToken: function isLastToken(tokens, i) {
+      // check id the next parsed token is remove pseudo
+      var isNextRemoveToken = tokens[i + 1] && tokens[i + 1].type === 'PSEUDO' && tokens[i + 1].matches && tokens[i + 1].matches[0] === 'remove'; // check if the token is last
+      // and if it is not check if it is remove one
+      // which should be skipped
+
+      return i + 1 !== tokens.length && !isNextRemoveToken;
+    },
+
+    /**
      * @private
      * @return {string|undefined} upward parameter
      * or undefined if the input does not contain upward tokens
@@ -3450,8 +4180,35 @@ var ExtendedSelectorFactory = function () {
 
           if (matches && matches.length > 1) {
             if (matches[0] === 'upward') {
-              if (i + 1 !== tokensLength) {
+              if (this.isLastToken(tokens, i)) {
                 throw new Error('Invalid pseudo: \':upward\' should be at the end of the selector');
+              }
+
+              return matches[1];
+            }
+          }
+        }
+      }
+    },
+
+    /**
+     * @private
+     * @return {string|undefined} remove parameter
+     * or undefined if the input does not contain remove tokens
+     */
+    getRemovePart: function getRemovePart() {
+      var tokens = this.tokens[0];
+
+      for (var i = 0, tokensLength = tokens.length; i < tokensLength; i++) {
+        var token = tokens[i];
+
+        if (token.type === 'PSEUDO') {
+          var matches = token.matches;
+
+          if (matches && matches.length > 1) {
+            if (matches[0] === 'remove') {
+              if (i + 1 !== tokensLength) {
+                throw new Error('Invalid pseudo: \':remove\' should be at the end of the selector');
               }
 
               return matches[1];
@@ -3515,24 +4272,23 @@ var ExtendedSelectorFactory = function () {
     isDebugging: isDebugging
   };
   /**
-   * Xpath selector class
-   * Limited to support xpath to be only the last one token in selector
+   * Parental class for such pseudo-classes as xpath, upward, remove
+   * which are limited to be the last one token in selector
    *
    * @param {string} selectorText
-   * @param {string} xpath value
+   * @param {string} pseudoClassArg pseudo-class arg
    * @param {boolean=} debug
    * @constructor
    */
 
-  function XpathSelector(selectorText, xpath, debug) {
-    // Xpath is limited to be the last one token
+  function BaseLastArgumentSelector(selectorText, pseudoClassArg, debug) {
     this.selectorText = selectorText;
-    this.xpath = xpath;
+    this.pseudoClassArg = pseudoClassArg;
     this.debug = debug;
     Sizzle.compile(this.selectorText);
   }
 
-  XpathSelector.prototype = {
+  BaseLastArgumentSelector.prototype = {
     querySelectorAll: function querySelectorAll() {
       var _this = this;
 
@@ -3550,7 +4306,7 @@ var ExtendedSelectorFactory = function () {
       }
 
       simpleNodes.forEach(function (node) {
-        _this.xpathSearch(node, _this.xpath, resultNodes);
+        _this.searchResultNodes(node, _this.pseudoClassArg, resultNodes);
       });
       return Sizzle.uniqueSort(resultNodes);
     },
@@ -3565,96 +4321,128 @@ var ExtendedSelectorFactory = function () {
     isDebugging: isDebugging,
 
     /**
-     * Applies xpath to provided context node
-     *
+     * Primitive method that returns all nodes if pseudo-class arg is defined.
+     * That logic works for remove pseudo-class,
+     * but for others it should be overridden.
      * @param {Object} node context element
-     * @param {string} xpath
+     * @param {string} pseudoClassArg pseudo-class argument
      * @param {Array} result
      */
-    xpathSearch: function xpathSearch(node, xpath, result) {
-      var xpathResult = document.evaluate(xpath, node, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
-      var iNode; // eslint-disable-next-line no-cond-assign
-
-      while (iNode = xpathResult.iterateNext()) {
-        result.push(iNode);
+    searchResultNodes: function searchResultNodes(node, pseudoClassArg, result) {
+      if (pseudoClassArg) {
+        result.push(node);
       }
     }
   };
   /**
+   * Xpath selector class
+   * Limited to support 'xpath' to be only the last one token in selector
+   * @param {string} selectorText
+   * @param {string} xpath value
+   * @param {boolean=} debug
+   * @constructor
+   * @augments BaseLastArgumentSelector
+   */
+
+  function XpathSelector(selectorText, xpath, debug) {
+    var NO_SELECTOR_MARKER = ':xpath(//';
+    var BODY_SELECTOR_REPLACER = 'body:xpath(//';
+    var modifiedSelectorText = selectorText; // Normally, a pseudo-class is applied to nodes selected by a selector -- selector:xpath(...).
+    // However, :xpath is special as the selector can be ommited.
+    // For any other pseudo-class that would mean "apply to ALL DOM nodes",
+    // but in case of :xpath it just means "apply me to the document".
+
+    if (utils.startsWith(selectorText, NO_SELECTOR_MARKER)) {
+      modifiedSelectorText = selectorText.replace(NO_SELECTOR_MARKER, BODY_SELECTOR_REPLACER);
+    }
+
+    BaseLastArgumentSelector.call(this, modifiedSelectorText, xpath, debug);
+  }
+
+  XpathSelector.prototype = Object.create(BaseLastArgumentSelector.prototype);
+  XpathSelector.prototype.constructor = XpathSelector;
+  /**
+   * Applies xpath pseudo-class to provided context node
+   * @param {Object} node context element
+   * @param {string} pseudoClassArg xpath
+   * @param {Array} result
+   * @override
+   */
+
+  XpathSelector.prototype.searchResultNodes = function (node, pseudoClassArg, result) {
+    var xpathResult = document.evaluate(pseudoClassArg, node, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
+    var iNode; // eslint-disable-next-line no-cond-assign
+
+    while (iNode = xpathResult.iterateNext()) {
+      result.push(iNode);
+    }
+  };
+  /**
    * Upward selector class
-   * Limited to support upward to be only the last one token in selector
-   *
+   * Limited to support 'upward' to be only the last one token in selector
    * @param {string} selectorText
    * @param {string} upwardSelector value
    * @param {boolean=} debug
    * @constructor
+   * @augments BaseLastArgumentSelector
    */
 
+
   function UpwardSelector(selectorText, upwardSelector, debug) {
-    // Xpath is limited to be the last one token
-    this.selectorText = selectorText;
-    this.upwardSelector = upwardSelector;
-    this.debug = debug;
-    Sizzle.compile(this.selectorText);
+    BaseLastArgumentSelector.call(this, selectorText, upwardSelector, debug);
   }
 
-  UpwardSelector.prototype = {
-    querySelectorAll: function querySelectorAll() {
-      var _this2 = this;
+  UpwardSelector.prototype = Object.create(BaseLastArgumentSelector.prototype);
+  UpwardSelector.prototype.constructor = UpwardSelector;
+  /**
+   * Applies upward pseudo-class to provided context node
+   * @param {Object} node context element
+   * @param {string} upwardSelector upward selector
+   * @param {Array} result
+   * @override
+   */
 
-      var resultNodes = [];
-      var simpleNodes;
+  UpwardSelector.prototype.searchResultNodes = function (node, upwardSelector, result) {
+    if (upwardSelector !== '') {
+      var parent = node.parentElement;
 
-      if (this.selectorText) {
-        simpleNodes = Sizzle(this.selectorText);
-
-        if (!simpleNodes || !simpleNodes.length) {
-          return resultNodes;
-        }
-      } else {
-        simpleNodes = [document];
+      if (parent === null) {
+        return;
       }
 
-      simpleNodes.forEach(function (node) {
-        _this2.upwardSearch(node, _this2.upwardSelector, resultNodes);
-      });
-      return Sizzle.uniqueSort(resultNodes);
-    },
+      node = parent.closest(upwardSelector);
 
-    /** @final */
-    matches: function matches(element) {
-      var results = this.querySelectorAll();
-      return results.indexOf(element) > -1;
-    },
-
-    /** @final */
-    isDebugging: isDebugging,
-
-    /**
-     * Applies upwardSelector to provided context node
-     *
-     * @param {Object} node context element
-     * @param {string} upwardSelector
-     * @param {Array} result
-     */
-    upwardSearch: function upwardSearch(node, upwardSelector, result) {
-      if (upwardSelector !== '') {
-        var parent = node.parentElement;
-
-        if (parent === null) {
-          return;
-        }
-
-        node = parent.closest(upwardSelector);
-
-        if (node === null) {
-          return;
-        }
+      if (node === null) {
+        return;
       }
-
-      result.push(node);
     }
+
+    result.push(node);
   };
+  /**
+   * Remove selector class
+   * Limited to support 'remove' to be only the last one token in selector
+   * @param {string} selectorText
+   * @param {boolean} hasValidRemovePart
+   * @param {boolean=} debug
+   * @constructor
+   * @augments BaseLastArgumentSelector
+   */
+
+
+  function RemoveSelector(selectorText, hasValidRemovePart, debug) {
+    var REMOVE_PSEUDO_MARKER = ':remove()';
+    var removeMarkerIndex = selectorText.indexOf(REMOVE_PSEUDO_MARKER); // deleting remove part of rule instead of which
+    // pseudo-property property 'remove' will be added by ExtendedCssParser
+
+    var modifiedSelectorText = selectorText.slice(0, removeMarkerIndex);
+    BaseLastArgumentSelector.call(this, modifiedSelectorText, hasValidRemovePart, debug); // mark extendedSelector as Remove one for ExtendedCssParser
+
+    this.isRemoveSelector = true;
+  }
+
+  RemoveSelector.prototype = Object.create(BaseLastArgumentSelector.prototype);
+  RemoveSelector.prototype.constructor = RemoveSelector;
   /**
    * A splitted extended selector class.
    *
@@ -3685,7 +4473,7 @@ var ExtendedSelectorFactory = function () {
   /** @override */
 
   SplittedSelector.prototype.querySelectorAll = function () {
-    var _this3 = this;
+    var _this2 = this;
 
     var resultNodes = [];
     var simpleNodes;
@@ -3709,7 +4497,7 @@ var ExtendedSelectorFactory = function () {
     switch (relation) {
       case ' ':
         simpleNodes.forEach(function (node) {
-          _this3.relativeSearch(node, resultNodes);
+          _this2.relativeSearch(node, resultNodes);
         });
         break;
 
@@ -3717,7 +4505,7 @@ var ExtendedSelectorFactory = function () {
         {
           simpleNodes.forEach(function (node) {
             Object.values(node.children).forEach(function (childNode) {
-              if (_this3.matches(childNode)) {
+              if (_this2.matches(childNode)) {
                 resultNodes.push(childNode);
               }
             });
@@ -3730,7 +4518,7 @@ var ExtendedSelectorFactory = function () {
           simpleNodes.forEach(function (node) {
             var parentNode = node.parentNode;
             Object.values(parentNode.children).forEach(function (childNode) {
-              if (_this3.matches(childNode) && childNode.previousElementSibling === node) {
+              if (_this2.matches(childNode) && childNode.previousElementSibling === node) {
                 resultNodes.push(childNode);
               }
             });
@@ -3743,7 +4531,7 @@ var ExtendedSelectorFactory = function () {
           simpleNodes.forEach(function (node) {
             var parentNode = node.parentNode;
             Object.values(parentNode.children).forEach(function (childNode) {
-              if (_this3.matches(childNode) && node.compareDocumentPosition(childNode) === 4) {
+              if (_this2.matches(childNode) && node.compareDocumentPosition(childNode) === 4) {
                 resultNodes.push(childNode);
               }
             });
@@ -3911,6 +4699,13 @@ var ExtendedCssParser = function () {
 
           try {
             var extendedSelector = ExtendedSelectorFactory.createSelector(data.selectorText, data.groups, debug);
+
+            if (extendedSelector.pseudoClassArg && extendedSelector.isRemoveSelector) {
+              // if there is remove pseudo-class in rule,
+              // the element will be removed and no other styles will be applied
+              styleMap['remove'] = 'true';
+            }
+
             results.push({
               selector: extendedSelector,
               style: styleMap
@@ -4032,9 +4827,15 @@ function ExtendedCss(configuration) {
   var EventTracker = function () {
     var ignoredEventTypes = ['mouseover', 'mouseleave', 'mouseenter', 'mouseout'];
     var LAST_EVENT_TIMEOUT_MS = 10;
-    var TRACKED_EVENTS = [// keyboard events
+    var EVENTS = [// keyboard events
     'keydown', 'keypress', 'keyup', // mouse events
-    'auxclick', 'click', 'contextmenu', 'dblclick', 'mousedown', 'mouseenter', 'mouseleave', 'mousemove', 'mouseover', 'mouseout', 'mouseup', 'pointerlockchange', 'pointerlockerror', 'select', 'wheel'];
+    'auxclick', 'click', 'contextmenu', 'dblclick', 'mousedown', 'mouseenter', 'mouseleave', 'mousemove', 'mouseover', 'mouseout', 'mouseup', 'pointerlockchange', 'pointerlockerror', 'select', 'wheel']; // 'wheel' event makes scrolling in Safari twitchy
+    // https://github.com/AdguardTeam/ExtendedCss/issues/120
+
+    var safariProblematicEvents = ['wheel'];
+    var trackedEvents = utils.isSafariBrowser ? EVENTS.filter(function (el) {
+      return !(safariProblematicEvents.indexOf(el) > -1);
+    }) : EVENTS;
     var lastEventType;
     var lastEventTime;
 
@@ -4043,7 +4844,7 @@ function ExtendedCss(configuration) {
       lastEventTime = Date.now();
     };
 
-    TRACKED_EVENTS.forEach(function (evName) {
+    trackedEvents.forEach(function (evName) {
       document.documentElement.addEventListener(evName, trackEvent, true);
     });
 
@@ -4193,22 +4994,10 @@ function ExtendedCss(configuration) {
 
 
   function findAffectedElement(node) {
-    // eslint-disable-next-line no-restricted-syntax
-    var _iterator = _createForOfIteratorHelper(affectedElements),
-        _step;
-
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var affectedElement = _step.value;
-
-        if (affectedElement.node === node) {
-          return affectedElement;
-        }
+    for (var i = 0; i < affectedElements.length; i += 1) {
+      if (affectedElements[i].node === node) {
+        return affectedElements[i];
       }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
     }
 
     return null;
@@ -4365,20 +5154,22 @@ function ExtendedCss(configuration) {
       Array.prototype.push.apply(elementsIndex, nodes);
     }); // Now revert styles for elements which are no more affected
 
-    var l = affectedElements.length;
+    var l = affectedElements.length; // do nothing if there is no elements to process
 
-    while (l--) {
-      var obj = affectedElements[l];
+    if (elementsIndex.length > 0) {
+      while (l--) {
+        var obj = affectedElements[l];
 
-      if (elementsIndex.indexOf(obj.node) === -1) {
-        // Time to revert style
-        revertStyle(obj);
-        affectedElements.splice(l, 1);
-      } else if (!obj.removed) {
-        // Add style protection observer
-        // Protect "style" attribute from changes
-        if (!obj.protectionObserver) {
-          obj.protectionObserver = protectStyleAttribute(obj.node, obj.rules);
+        if (elementsIndex.indexOf(obj.node) === -1) {
+          // Time to revert style
+          revertStyle(obj);
+          affectedElements.splice(l, 1);
+        } else if (!obj.removed) {
+          // Add style protection observer
+          // Protect "style" attribute from changes
+          if (!obj.protectionObserver) {
+            obj.protectionObserver = protectStyleAttribute(obj.node, obj.rules);
+          }
         }
       }
     } // After styles are applied we can start observe again

@@ -1,4 +1,4 @@
-# Extended Css engine [![Build Status](https://travis-ci.com/AdguardTeam/ExtendedCss.svg?branch=master)](https://travis-ci.com/AdguardTeam/ExtendedCss)
+# Extended Css engine
 
 Module for applying CSS styles with extended selection properties.
 
@@ -13,6 +13,7 @@ Module for applying CSS styles with extended selection properties.
   * [Pseudo-class :nth-ancestor()](#extended-css-nth-ancestor)
   * [Pseudo-class :upward()](#extended-css-upward)
   * [Pseudo-class :remove() and pseudo-property `remove`](#remove-pseudos)
+  * [Pseudo-class :is()](#extended-css-is)
   * [Selectors debug mode](#selectors-debug-mode)
 * [Usage](#usage)
 * [Debugging extended selectors](#debugging-extended-selectors)
@@ -150,9 +151,9 @@ selector[-ext-matches-css-before="property-name ":" pattern"]
 - `property-name` — a name of CSS property to check the element for
 - `pattern` —  a value pattern that is using the same simple wildcard matching as in the basic url filtering rules OR a regular expression. For this type of matching, AdGuard always does matching in a case insensitive manner. In the case of a regular expression, the pattern looks like `/regex/`.
 
-> For non-regex patterns, `(`,`)`,`[`,`]` must be unescaped, because we require escaping them in the filtering rules.
+> For non-regex patterns, `(`,`)`,`[`,`]` must be unescaped, because we require escaping them in the filtering rules. For example, `:matches-css(background-image:url(data:*))`.
 
-> For regex patterns, `"` and `\` should be escaped, because we manually escape those in extended-css-selector.js.
+> For regex patterns, `"` and `\` should be escaped, because we manually escape those in extended-css-selector.js. For example: `:matches-css(background-image: /^url\\(\\"data\\:\\image.+/)`.
 
 **Examples**
 
@@ -244,7 +245,7 @@ div:matches-attr("/-unit/"="/click/"):has(> span:contains(ads))
 <a id="extended-css-matches-property"></a>
 ### Pseudo-class `:matches-property()`
 
-This pseudo-class allows to select an element by its attributes, especially if they are randomized.
+This pseudo-class allows to select an element by its properties.
 
 **Syntax**
 ```
@@ -260,7 +261,7 @@ selector:matches-property("name"[="value"])
 
 **Examples**
 
-```js
+```javascript
 divProperties = {
     id: 1,
     check: {
@@ -283,7 +284,7 @@ divProperties = {
 
 div:matches-property("check.track")
 
-div:matches-property("check./^unit_.{4,6}$/"))
+div:matches-property("check./^unit_.{4,6}$/")
 
 div:matches-property("memoizedProps.key"="null")
 
@@ -291,9 +292,9 @@ div:matches-property("memoizedProps._owner.src"="/ad/")
 ```
 
 <details>
-  <summary><b>For filter maintainers</b></summary>
+  <summary><b>For filters maintainers</b></summary>
 
-  To check element properties, do:
+  To check properties of specific element, do:
   1. Select the element on the page.
   2. Go to Console tab and run `console.dir($0)`.
 </details>
@@ -305,6 +306,8 @@ This pseudo-class allows to select an element by evaluating a XPath expression.
 > **Limited to work properly only at the end of selector, except of [pseudo-class :remove()](#remove-pseudos).**
 
 The :xpath(...) pseudo is different than other pseudo-classes. Whereas all other operators are used to filter down a resultset of elements, the :xpath(...) operator can be used both to create a new resultset or filter down an existing one. For this reason, subject selector is optional. For example, an :xpath(...) operator could be used to create a new resultset consisting of all ancestors elements of a subject element, something not otherwise possible with either plain CSS selectors or other procedural operators.
+
+Normally, a pseudo-class is applied to nodes selected by a `selector`. However, :xpath is special as the selector can be ommited. For any other pseudo-class that would mean "apply to ALL DOM nodes", but in case of :xpath it just means "apply me to the document", and that significantly slows elements selecting. That's why we convert `#?#:xpath(...)` rules for looking inside the body tag. Rules like `#?#*:xpath(...)` can still be used but we highly recommend you avoid it and specify the `selector`.
 
 **Syntax**
 ```
@@ -402,6 +405,26 @@ div[class]:has(> a:not([id])) { remove: true; }
 
 > Please note, that all style properties will be ignored if `:remove()` pseudo-class or `remove` pseudo-property is used.
 
+<a id="extended-css-is"></a>
+### Pseudo-class `:is()`
+
+This pseudo-class allown to match any element that can be selected by one of the selectors passed to :is().
+If there is invalid selector passed, it will be passed and pseudo-class will deal with valid ones.
+Our implementation of matches-any pseudo-class https://developer.mozilla.org/en-US/docs/Web/CSS/:is
+
+**Syntax**
+```
+
+:is(selectors)
+```
+- `selectors` — list of plain CSS selector
+
+**Examples**
+```
+#main :is(.header, .body, .footer) .banner-inner
+:is(.div-inner, .div-inner2):contains(textmarker)
+```
+
 ### Selectors debug mode
 
 Sometimes, you might need to check the performance of a given selector or a stylesheet. In order to do it without interacting with javascript directly, you can use a special `debug` style property. When `ExtendedCss` meets this property, it enables the "debug"-mode either for a single selector or for all selectors depending on the `debug` value.
@@ -466,6 +489,7 @@ ExtendedCss.query(selectorText) // returns an array of Elements matching selecto
 
 ### Projects using Extended Css
 * [CoreLibs](https://github.com/AdguardTeam/CoreLibs) (Content Script should be updated)
+* [TSUrlFilter](https://github.com/AdguardTeam/tsurlfilter)
 * [AdguardBrowserExtension](https://github.com/AdguardTeam/AdguardBrowserExtension)
 * [AdguardForSafari](https://github.com/AdguardTeam/AdGuardForSafari)
 
