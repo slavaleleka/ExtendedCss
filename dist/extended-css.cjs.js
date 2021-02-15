@@ -1,4 +1,4 @@
-/*! extended-css - v1.3.9 - Fri Feb 12 2021
+/*! extended-css - v1.3.10 - Mon Feb 15 2021
 * https://github.com/AdguardTeam/ExtendedCss
 * Copyright (c) 2021 AdGuard. Licensed LGPL-3.0
 */
@@ -719,11 +719,16 @@ var cssUtils = function () {
    */
 
   var normalize = function normalize(cssText) {
-    cssText = cssText.replace(reAttrFallback, evaluateMatch);
-    cssText = cssText.replace(reMatchesCss, addQuotes);
-    cssText = cssText.replace(reContains, addQuotes);
-    cssText = cssText.replace(reScope, SCOPE_REPLACER);
-    return cssText;
+    // cssText = cssText.replace(reAttrFallback, evaluateMatch);
+    // cssText = cssText.replace(reMatchesCss, addQuotes);
+    // cssText = cssText.replace(reContains, addQuotes);
+    // cssText = cssText.replace(reScope, SCOPE_REPLACER);
+    // return cssText;
+    var normalizedCssText = cssText.replace(reAttrFallback, evaluateMatch);
+    normalizedCssText = normalizedCssText.replace(reMatchesCss, addQuotes);
+    normalizedCssText = normalizedCssText.replace(reContains, addQuotes);
+    normalizedCssText = normalizedCssText.replace(reScope, SCOPE_REPLACER);
+    return normalizedCssText;
   };
 
   var isSimpleSelectorValid = function isSimpleSelectorValid(selector) {
