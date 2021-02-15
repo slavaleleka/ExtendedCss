@@ -4789,8 +4789,10 @@ var ExtendedCssParser = function () {
   };
   return {
     parseCss: function parseCss(cssText) {
-      Sizzle = initializeSizzle();
-      return new Parser(cssUtils.normalize(cssText)).parseCss();
+      Sizzle = initializeSizzle(); // return (new Parser(cssUtils.normalize(cssText))).parseCss();
+
+      var parser = new Parser(cssUtils.normalize(cssText)).parseCss();
+      return parser;
     }
   };
 }();
